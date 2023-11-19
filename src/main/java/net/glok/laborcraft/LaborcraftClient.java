@@ -7,6 +7,8 @@ import net.glok.laborcraft.entity.ModEntities;
 import net.glok.laborcraft.entity.client.DefaultWorkerModel;
 import net.glok.laborcraft.entity.client.DefaultWorkerRenderer;
 import net.glok.laborcraft.entity.client.ModModelLayers;
+import net.glok.laborcraft.util.BoxScreen;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 
 public class LaborcraftClient implements ClientModInitializer {
 
@@ -29,5 +31,7 @@ public class LaborcraftClient implements ClientModInitializer {
       ModModelLayers.LUMBERJACK,
       DefaultWorkerModel::getTexturedModelData
     );
+
+    HandledScreens.register(Laborcraft.BOX_SCREEN_HANDLER, BoxScreen::new);
   }
 }

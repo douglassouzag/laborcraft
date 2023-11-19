@@ -1,5 +1,6 @@
 package net.glok.laborcraft.entity.custom;
 
+import net.glok.laborcraft.util.BoxScreenHandler;
 import net.glok.laborcraft.util.ImplementedInventory;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -12,10 +13,13 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -26,12 +30,12 @@ import org.jetbrains.annotations.Nullable;
 
 public class DefaultWorkerEntity
   extends PathAwareEntity
-  implements ImplementedInventory {
+  implements NamedScreenHandlerFactory, ImplementedInventory {
 
   public String occupation;
 
   private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(
-    2,
+    27,
     ItemStack.EMPTY
   );
 
@@ -74,8 +78,6 @@ public class DefaultWorkerEntity
     super.tick();
   }
 
-  //Inventory related methods
-
   @Override
   public DefaultedList<ItemStack> getItems() {
     return inventory;
@@ -96,33 +98,15 @@ public class DefaultWorkerEntity
   @Nullable
   @Override
   public ActionResult interactMob(PlayerEntity player, Hand hand) {
-    if (player.getWorld().isClient()) return ActionResult.SUCCESS;
+    if (!player.getWorld().isClient()) {
+      SimpleNamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
+        (syncId, inventory, playerx) ->
+          new BoxScreenHandler(syncId, inventory, this),
+        this.getDisplayName()
+      );
 
-    Inventory mobEntity = (Inventory) this;
-
-    if (!player.getStackInHand(hand).isEmpty()) {
-      if (mobEntity.getStack(0).isEmpty()) {
-        mobEntity.setStack(0, player.getStackInHand(hand).copy());
-        player.getStackInHand(hand).setCount(0);
-        this.activeItemStack = player.getStackInHand(hand).copy();
-      } else if (mobEntity.getStack(1).isEmpty()) {
-        mobEntity.setStack(1, player.getStackInHand(hand).copy());
-        player.getStackInHand(hand).setCount(0);
-      } else {
-        System.out.println(
-          "The first slot holds " +
-          mobEntity.getStack(0) +
-          " and the second slot holds " +
-          mobEntity.getStack(1)
-        );
-      }
-    } else {
-      if (!mobEntity.getStack(1).isEmpty()) {
-        player.getInventory().offerOrDrop(mobEntity.getStack(1));
-        mobEntity.removeStack(1);
-      } else if (!mobEntity.getStack(0).isEmpty()) {
-        player.getInventory().offerOrDrop(mobEntity.getStack(0));
-        mobEntity.removeStack(0);
+      if (screenHandlerFactory != null) {
+        player.openHandledScreen(screenHandlerFactory);
       }
     }
     return ActionResult.SUCCESS;
@@ -143,5 +127,14 @@ public class DefaultWorkerEntity
     }
 
     super.onKilledBy(adversary);
+  }
+
+  @Override
+  public ScreenHandler createMenu(
+    int syncId,
+    PlayerInventory playerInventory,
+    PlayerEntity player
+  ) {
+    return new BoxScreenHandler(syncId, playerInventory, this);
   }
 }
