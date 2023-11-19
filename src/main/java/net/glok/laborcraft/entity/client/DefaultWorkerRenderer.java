@@ -5,6 +5,7 @@ import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
@@ -24,6 +25,12 @@ public class DefaultWorkerRenderer
       new PlayerEntityModel<>(context.getPart(EntityModelLayers.PLAYER), false),
       0.6F
     );
+    this.addFeature(
+        new HeldItemFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>>(
+          this,
+          context.getHeldItemRenderer()
+        )
+      );
   }
 
   @Override

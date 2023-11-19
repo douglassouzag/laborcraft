@@ -1,4 +1,4 @@
 {
-    "entity.laborcraft.default_worker": "Desempregado",
-    "entity.laborcraft.lumberjack": "Lenhador"
+    "entity.laborcraft.default_worker": "Unemployed",
+    "entity.laborcraft.lumberjack": "Lumberjack"
 }

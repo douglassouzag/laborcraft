@@ -2,6 +2,7 @@ package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.util.ImplementedInventory;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +29,7 @@ public class DefaultWorkerEntity
   implements ImplementedInventory {
 
   public String occupation;
+
   private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(
     2,
     ItemStack.EMPTY
@@ -101,6 +104,7 @@ public class DefaultWorkerEntity
       if (mobEntity.getStack(0).isEmpty()) {
         mobEntity.setStack(0, player.getStackInHand(hand).copy());
         player.getStackInHand(hand).setCount(0);
+        this.activeItemStack = player.getStackInHand(hand).copy();
       } else if (mobEntity.getStack(1).isEmpty()) {
         mobEntity.setStack(1, player.getStackInHand(hand).copy());
         player.getStackInHand(hand).setCount(0);
@@ -122,5 +126,22 @@ public class DefaultWorkerEntity
       }
     }
     return ActionResult.SUCCESS;
+  }
+
+  @Override
+  protected void onKilledBy(LivingEntity adversary) {
+    for (int i = 0; i < this.inventory.size(); i++) {
+      if (!this.inventory.get(i).isEmpty()) {
+        ItemScatterer.spawn(
+          getEntityWorld(),
+          this.getX(),
+          this.getY(),
+          this.getZ(),
+          this.inventory.get(i)
+        );
+      }
+    }
+
+    super.onKilledBy(adversary);
   }
 }
