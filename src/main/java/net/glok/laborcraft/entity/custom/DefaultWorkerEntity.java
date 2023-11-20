@@ -25,6 +25,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +33,12 @@ public class DefaultWorkerEntity
   extends PathAwareEntity
   implements NamedScreenHandlerFactory, ImplementedInventory {
 
-  public String occupation;
+  public String name;
+  public ChunkPos workChunk = new ChunkPos(0, 0);
+  private boolean isSettingUpWorkArea = true;
+  public PlayerEntity boss;
+  private static final String WORK_CHUNK_KEY = "WorkChunk";
+  private static final String NAME_KEY = "Name";
 
   private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(
     27,
@@ -44,7 +50,12 @@ public class DefaultWorkerEntity
     World world
   ) {
     super(entityType, world);
-    this.occupation = "Unemployed";
+    this.name = "Unemployed";
+  }
+
+  public void followPlayer(PlayerEntity player) {
+    this.getNavigation()
+      .startMovingTo(player.getX(), player.getY(), player.getZ(), 0.5f);
   }
 
   @Override
@@ -63,19 +74,20 @@ public class DefaultWorkerEntity
       .createMobAttributes()
       .add(EntityAttributes.GENERIC_MAX_HEALTH, 15)
       .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.5f)
-      .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2);
+      .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 0.5f);
   }
 
   @Override
   public void tick() {
-    if (
-      this.getCustomName() == null ||
-      this.getCustomName().getString() != this.occupation
-    ) {
-      this.setCustomName(Text.of(this.occupation));
-      this.setCustomNameVisible(true);
-    }
     super.tick();
+
+    if (this.boss != null) {
+      this.followPlayer(this.boss);
+    }
+
+    this.setCustomName(Text.of(this.name + " " + this.workChunk.toString()));
+
+    this.setCustomNameVisible(true);
   }
 
   @Override
@@ -86,12 +98,28 @@ public class DefaultWorkerEntity
   @Override
   public void readNbt(NbtCompound nbt) {
     super.readNbt(nbt);
+    if (nbt.contains(WORK_CHUNK_KEY)) {
+      String chunkString = nbt.getString(WORK_CHUNK_KEY);
+      chunkString = chunkString.substring(1, chunkString.length() - 1);
+
+      int x = Integer.parseInt(chunkString.split(",")[0].strip());
+      int z = Integer.parseInt(chunkString.split(",")[1].strip());
+
+      this.workChunk = new ChunkPos(x, z);
+    }
+    if (nbt.contains(NAME_KEY)) {
+      this.name = nbt.getString(NAME_KEY);
+    }
     Inventories.readNbt(nbt, inventory);
   }
 
   @Override
   public NbtCompound writeNbt(NbtCompound nbt) {
     Inventories.writeNbt(nbt, inventory);
+
+    nbt.putString(WORK_CHUNK_KEY, this.workChunk.toString());
+    nbt.putString(NAME_KEY, this.name);
+
     return super.writeNbt(nbt);
   }
 
@@ -99,14 +127,29 @@ public class DefaultWorkerEntity
   @Override
   public ActionResult interactMob(PlayerEntity player, Hand hand) {
     if (!player.getWorld().isClient()) {
-      SimpleNamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
-        (syncId, inventory, playerx) ->
-          new BoxScreenHandler(syncId, inventory, this),
-        this.getDisplayName()
-      );
+      if (
+        player.getStackInHand(hand).getItem() == net.minecraft.item.Items.STICK
+      ) {
+        if (isSettingUpWorkArea) {
+          player.sendMessage(Text.of("Alright, take me to my work chunk"));
+          this.boss = player;
+        } else {
+          player.sendMessage(Text.of("Ok, i will work in this chunk"));
 
-      if (screenHandlerFactory != null) {
-        player.openHandledScreen(screenHandlerFactory);
+          this.workChunk = this.getChunkPos();
+          this.boss = null;
+        }
+        isSettingUpWorkArea = !isSettingUpWorkArea;
+      } else {
+        SimpleNamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
+          (syncId, inventory, playerx) ->
+            new BoxScreenHandler(syncId, inventory, this),
+          this.getDisplayName()
+        );
+
+        if (screenHandlerFactory != null) {
+          player.openHandledScreen(screenHandlerFactory);
+        }
       }
     }
     return ActionResult.SUCCESS;
@@ -136,17 +179,5 @@ public class DefaultWorkerEntity
     PlayerEntity player
   ) {
     return new BoxScreenHandler(syncId, playerInventory, this);
-  }
-
-  @Override
-  public boolean canPickUpLoot() {
-    return true;
-  }
-
-  @Override
-  public boolean canGather(ItemStack stack) {
-    System.out.println(stack);
-
-    return true;
   }
 }

@@ -6,7 +6,11 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
+import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
+import net.minecraft.client.render.entity.feature.HeadFeatureRenderer;
 import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
+import net.minecraft.client.render.entity.feature.StuckArrowsFeatureRenderer;
+import net.minecraft.client.render.entity.feature.StuckStingersFeatureRenderer;
 import net.minecraft.client.render.entity.model.ArmorEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -45,6 +49,30 @@ public class DefaultWorkerRenderer
           context.getModelManager()
         )
       );
+    this.addFeature(
+        new StuckArrowsFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>>(
+          context,
+          this
+        )
+      );
+    this.addFeature(
+        new HeadFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>>(
+          this,
+          context.getModelLoader(),
+          context.getHeldItemRenderer()
+        )
+      );
+    this.addFeature(
+        new ElytraFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>>(
+          this,
+          context.getModelLoader()
+        )
+      );
+    this.addFeature(
+        new StuckStingersFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>>(
+          this
+        )
+      );
   }
 
   @Override
@@ -61,10 +89,6 @@ public class DefaultWorkerRenderer
     VertexConsumerProvider vertexConsumerProvider,
     int i
   ) {
-    // if (mobEntity.isBaby()) {
-    //   matrixStack.scale(1f, 1f, 1f);
-    // }
-
     super.render(mobEntity, f, g, matrixStack, vertexConsumerProvider, i);
   }
 }
