@@ -5,7 +5,9 @@ import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
 import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
+import net.minecraft.client.render.entity.model.ArmorEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
@@ -31,6 +33,18 @@ public class DefaultWorkerRenderer
           context.getHeldItemRenderer()
         )
       );
+    this.addFeature(
+        new ArmorFeatureRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>, ArmorEntityModel<DefaultWorkerEntity>>(
+          this,
+          new ArmorEntityModel<DefaultWorkerEntity>(
+            context.getPart(EntityModelLayers.PLAYER_INNER_ARMOR)
+          ),
+          new ArmorEntityModel<DefaultWorkerEntity>(
+            context.getPart(EntityModelLayers.PLAYER_OUTER_ARMOR)
+          ),
+          context.getModelManager()
+        )
+      );
   }
 
   @Override
@@ -47,9 +61,9 @@ public class DefaultWorkerRenderer
     VertexConsumerProvider vertexConsumerProvider,
     int i
   ) {
-    if (mobEntity.isBaby()) {
-      matrixStack.scale(1f, 1f, 1f);
-    }
+    // if (mobEntity.isBaby()) {
+    //   matrixStack.scale(1f, 1f, 1f);
+    // }
 
     super.render(mobEntity, f, g, matrixStack, vertexConsumerProvider, i);
   }

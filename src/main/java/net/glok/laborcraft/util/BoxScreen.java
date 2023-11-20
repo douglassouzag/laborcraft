@@ -10,7 +10,6 @@ import net.minecraft.util.Identifier;
 
 public class BoxScreen extends HandledScreen<BoxScreenHandler> {
 
-  //A path to the gui texture. In this example we use the texture from the dispenser
   private static final Identifier TEXTURE = new Identifier(
     "minecraft",
     "textures/gui/container/shulker_box.png"
@@ -22,12 +21,6 @@ public class BoxScreen extends HandledScreen<BoxScreenHandler> {
     Text title
   ) {
     super(handler, inventory, title);
-  }
-
-  @Override
-  protected void init() {
-    super.init();
-    titleX = (backgroundWidth - textRenderer.getWidth(title)) / 2;
   }
 
   @Override

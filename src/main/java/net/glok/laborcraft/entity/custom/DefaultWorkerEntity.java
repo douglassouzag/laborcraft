@@ -137,4 +137,16 @@ public class DefaultWorkerEntity
   ) {
     return new BoxScreenHandler(syncId, playerInventory, this);
   }
+
+  @Override
+  public boolean canPickUpLoot() {
+    return true;
+  }
+
+  @Override
+  public boolean canGather(ItemStack stack) {
+    System.out.println(stack);
+
+    return true;
+  }
 }
