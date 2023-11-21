@@ -9,8 +9,13 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.Chunk;
 
 public class CollectItemsGoal extends Goal {
 
@@ -65,8 +70,22 @@ public class CollectItemsGoal extends Goal {
     return isThereSlotEmptyOnInventory();
   }
 
+  public boolean isItemInWorkChunk(ItemEntity item) {
+    ChunkPos chunkPos = this.mob.workChunk;
+    BlockPos itemPos = item.getBlockPos();
+    Chunk itemChunk = this.mob.getWorld().getChunk(itemPos);
+    Chunk worChunk = this.mob.getWorld().getChunk(chunkPos.getStartPos());
+
+    if (itemChunk == worChunk) {
+      return true;
+    }
+
+    return false;
+  }
+
   public void collectNearbyItem(ItemEntity[] items) {
     DefaultedList<ItemStack> inventory = this.mob.getItems();
+    double thresholdDistance = 1.8f; // Set your desired distance threshold
 
     Arrays.sort(
       items,
@@ -74,51 +93,64 @@ public class CollectItemsGoal extends Goal {
     );
 
     for (ItemEntity item : items) {
-      if (item.getStack().isEmpty()) {
+      if (item.getStack().isEmpty() || !isItemInWorkChunk(item)) {
         continue;
       }
       this.mob.getNavigation().startMovingTo(item, 0.5);
 
-      ItemStack itemStackToCollect = item.getStack();
-      int maxStackSize = itemStackToCollect.getMaxCount();
+      if (this.mob.distanceTo(item) <= thresholdDistance) {
+        ItemStack itemStackToCollect = item.getStack();
+        int maxStackSize = itemStackToCollect.getMaxCount();
 
-      // Look for stackable items in the inventory
-      for (ItemStack inventoryStack : inventory) {
-        if (inventoryStack.isEmpty()) {
-          continue;
+        for (ItemStack inventoryStack : inventory) {
+          if (inventoryStack.isEmpty()) {
+            continue;
+          }
+          if (
+            inventoryStack.getItem() == itemStackToCollect.getItem() &&
+            inventoryStack.getCount() < maxStackSize
+          ) {
+            int spaceLeftInStack = maxStackSize - inventoryStack.getCount();
+            int amountToTransfer = Math.min(
+              spaceLeftInStack,
+              itemStackToCollect.getCount()
+            );
+
+            // Transfer items to stackable slot in inventory
+            inventoryStack.increment(amountToTransfer);
+            itemStackToCollect.decrement(amountToTransfer);
+
+            if (itemStackToCollect.isEmpty()) {
+              item.discard();
+              break;
+            }
+          }
         }
-        if (
-          inventoryStack.getItem() == itemStackToCollect.getItem() &&
-          inventoryStack.getCount() < maxStackSize
-        ) {
-          int spaceLeftInStack = maxStackSize - inventoryStack.getCount();
-          int amountToTransfer = Math.min(
-            spaceLeftInStack,
-            itemStackToCollect.getCount()
-          );
 
-          // Transfer items to stackable slot in inventory
-          inventoryStack.increment(amountToTransfer);
-          itemStackToCollect.decrement(amountToTransfer);
+        for (int i = 0; i < inventory.size(); i++) {
+          ItemStack emptySlot = inventory.get(i);
+          if (emptySlot.isEmpty()) {
+            inventory.set(i, itemStackToCollect);
+            this.mob.getWorld()
+              .playSound(
+                null,
+                item.getBlockPos(),
+                SoundEvents.ENTITY_ITEM_PICKUP,
+                SoundCategory.AMBIENT,
+                0.6f,
+                1f
+              );
 
-          if (itemStackToCollect.isEmpty()) {
             item.discard();
             break;
           }
         }
-      }
 
-      for (int i = 0; i < inventory.size(); i++) {
-        ItemStack emptySlot = inventory.get(i);
-        if (emptySlot.isEmpty()) {
-          inventory.set(i, itemStackToCollect);
-          item.discard();
+        if (itemStackToCollect.isEmpty()) {
           break;
         }
-      }
-
-      if (itemStackToCollect.isEmpty()) {
-        break;
+      } else {
+        continue;
       }
     }
   }

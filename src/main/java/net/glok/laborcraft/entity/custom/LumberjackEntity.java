@@ -19,31 +19,6 @@ public class LumberjackEntity extends DefaultWorkerEntity {
     this.name = "Lumberjack";
     this.goalSelector.add(
         1,
-        new BreakBlocksGoal(
-          this,
-          new Block[] {
-            Blocks.OAK_LOG,
-            Blocks.SPRUCE_LOG,
-            Blocks.BIRCH_LOG,
-            Blocks.JUNGLE_LOG,
-            Blocks.ACACIA_LOG,
-            Blocks.DARK_OAK_LOG,
-            Blocks.CHERRY_LOG,
-            Blocks.MANGROVE_LOG,
-          },
-          new Item[] {
-            Items.WOODEN_AXE,
-            Items.STONE_AXE,
-            Items.IRON_AXE,
-            Items.GOLDEN_AXE,
-            Items.DIAMOND_AXE,
-            Items.NETHERITE_AXE,
-          },
-          true
-        )
-      );
-    this.goalSelector.add(
-        3,
         new CollectItemsGoal(
           this,
           new Item[] {
@@ -65,6 +40,31 @@ public class LumberjackEntity extends DefaultWorkerEntity {
             Items.DARK_OAK_SAPLING,
             Items.CHERRY_SAPLING,
           }
+        )
+      );
+    this.goalSelector.add(
+        2,
+        new BreakBlocksGoal(
+          this,
+          new Block[] {
+            Blocks.OAK_LOG,
+            Blocks.SPRUCE_LOG,
+            Blocks.BIRCH_LOG,
+            Blocks.JUNGLE_LOG,
+            Blocks.ACACIA_LOG,
+            Blocks.DARK_OAK_LOG,
+            Blocks.CHERRY_LOG,
+            Blocks.MANGROVE_LOG,
+          },
+          new Item[] {
+            Items.WOODEN_AXE,
+            Items.STONE_AXE,
+            Items.IRON_AXE,
+            Items.GOLDEN_AXE,
+            Items.DIAMOND_AXE,
+            Items.NETHERITE_AXE,
+          },
+          true
         )
       );
   }
