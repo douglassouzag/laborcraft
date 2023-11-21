@@ -17,9 +17,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -80,6 +83,12 @@ public class DefaultWorkerEntity
   @Override
   public void tick() {
     super.tick();
+
+    if (this.handSwinging) {
+      System.out.println("Swinging hand");
+    }
+
+    tickHandSwing();
 
     if (this.boss != null) {
       this.followPlayer(this.boss);
@@ -179,5 +188,58 @@ public class DefaultWorkerEntity
     PlayerEntity player
   ) {
     return new BoxScreenHandler(syncId, playerInventory, this);
+  }
+
+  public int getHandSwingDuration() {
+    return 10;
+  }
+
+  public void tickHandSwing() {
+    int i = this.getHandSwingDuration();
+    if (this.handSwinging) {
+      ++this.handSwingTicks;
+      if (this.handSwingTicks >= i) {
+        this.handSwingTicks = 0;
+        this.handSwinging = false;
+      }
+    } else {
+      this.handSwingTicks = 0;
+    }
+
+    this.handSwingProgress = (float) this.handSwingTicks / (float) i;
+  }
+
+  public void workerSwingHand(Hand hand, boolean fromServerPlayer) {
+    if (
+      !this.handSwinging ||
+      this.handSwingTicks >= this.getHandSwingDuration() / 2 ||
+      this.handSwingTicks < 0
+    ) {
+      this.handSwingTicks = -1;
+      this.handSwinging = true;
+      this.preferredHand = hand;
+      if (this.getWorld() instanceof ServerWorld) {
+        EntityAnimationS2CPacket entityAnimationS2CPacket = new EntityAnimationS2CPacket(
+          this,
+          hand == Hand.MAIN_HAND ? 0 : 3
+        );
+        System.out.println("is istance: " + entityAnimationS2CPacket);
+        ServerChunkManager serverChunkManager =
+          ((ServerWorld) this.getWorld()).getChunkManager();
+        if (fromServerPlayer) {
+          System.out.println("from server player: " + this.handSwingTicks);
+          serverChunkManager.sendToNearbyPlayers(
+            this,
+            entityAnimationS2CPacket
+          );
+        } else {
+          System.out.println("from player: " + this.handSwingTicks);
+          serverChunkManager.sendToOtherNearbyPlayers(
+            this,
+            entityAnimationS2CPacket
+          );
+        }
+      }
+    }
   }
 }

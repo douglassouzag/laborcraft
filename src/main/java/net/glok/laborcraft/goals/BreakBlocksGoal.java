@@ -3,11 +3,13 @@ package net.glok.laborcraft.goals;
 import java.util.Arrays;
 import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -19,15 +21,25 @@ public class BreakBlocksGoal extends Goal {
   protected final EntityNavigation entityNavigation;
   protected final World world;
   protected final DefaultedList<ItemStack> inventory;
+  protected final boolean replantTrees;
 
   protected final Block[] blocksToBreak;
 
   protected final Item[] workTools;
 
+  public static Block[] naturalGroundBlocks = new Block[] {
+    Blocks.GRASS_BLOCK,
+    Blocks.DIRT,
+    Blocks.COARSE_DIRT,
+    Blocks.PODZOL,
+    Blocks.MYCELIUM,
+  };
+
   public BreakBlocksGoal(
     DefaultWorkerEntity mob,
     Block[] blocksToBreak,
-    Item[] workTools
+    Item[] workTools,
+    boolean replantTrees
   ) {
     this.mob = mob;
     this.entityNavigation = mob.getNavigation();
@@ -35,9 +47,12 @@ public class BreakBlocksGoal extends Goal {
     this.inventory = mob.getItems();
     this.blocksToBreak = blocksToBreak;
     this.workTools = workTools;
+    this.replantTrees = replantTrees;
   }
 
   public boolean hasWorkTool() {
+    if (workTools.length == 0) return true;
+
     for (ItemStack item : inventory) {
       for (Item tool : workTools) {
         if (item.getItem() == tool && !isToolLowDurability(item)) {
@@ -72,6 +87,8 @@ public class BreakBlocksGoal extends Goal {
 
     if (bestWorkTool != null) {
       mob.equipStack(EquipmentSlot.MAINHAND, new ItemStack(bestWorkTool));
+    } else {
+      mob.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
     }
 
     return bestWorkTool;
@@ -143,8 +160,17 @@ public class BreakBlocksGoal extends Goal {
     );
   }
 
+  private boolean isBlockTouchingGround(BlockPos blockPos) {
+    Block blockBelow = this.world.getBlockState(blockPos.down()).getBlock();
+    return (Arrays.asList(naturalGroundBlocks).contains(blockBelow));
+  }
+
   public boolean isNearEnough(BlockPos blockPos) {
-    return this.mob.getBlockPos().getManhattanDistance(blockPos) < 3.5f;
+    return this.mob.getBlockPos().getManhattanDistance(blockPos) < 16;
+  }
+
+  public boolean isMoving() {
+    return this.entityNavigation.isFollowingPath();
   }
 
   public void damageWorkTool() {
@@ -162,9 +188,52 @@ public class BreakBlocksGoal extends Goal {
     }
   }
 
+  public Block getSapling(BlockPos blockPos) {
+    Block block = this.world.getBlockState(blockPos).getBlock();
+    if (block == Blocks.OAK_LOG) {
+      return Blocks.OAK_SAPLING;
+    } else if (block == Blocks.SPRUCE_LOG) {
+      return Blocks.SPRUCE_SAPLING;
+    } else if (block == Blocks.BIRCH_LOG) {
+      return Blocks.BIRCH_SAPLING;
+    } else if (block == Blocks.JUNGLE_LOG) {
+      return Blocks.JUNGLE_SAPLING;
+    } else if (block == Blocks.ACACIA_LOG) {
+      return Blocks.ACACIA_SAPLING;
+    } else if (block == Blocks.DARK_OAK_LOG) {
+      return Blocks.DARK_OAK_SAPLING;
+    } else if (block == Blocks.CHERRY_LOG) {
+      return Blocks.CHERRY_SAPLING;
+    } else {
+      return null;
+    }
+  }
+
+  public void replantTree(BlockPos blockPos, Block sappling) {
+    if (sappling != null) {
+      this.world.setBlockState(blockPos, sappling.getDefaultState());
+    }
+  }
+
   public void breakBlockWithTool(BlockPos blockPos) {
+    boolean wasTouchingGround = isBlockTouchingGround(blockPos);
+    Block sappling = getSapling(blockPos);
+
+    this.mob.getLookControl()
+      .lookAt(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+
+    if (!this.mob.handSwinging) {
+      this.mob.workerSwingHand(Hand.MAIN_HAND, true);
+    }
+
     this.world.breakBlock(blockPos, true, mob);
-    damageWorkTool();
+
+    if (wasTouchingGround) {
+      replantTree(blockPos, sappling);
+    }
+    if (workTools.length != 0) {
+      damageWorkTool();
+    }
   }
 
   @Override
@@ -177,7 +246,7 @@ public class BreakBlocksGoal extends Goal {
     if (blockToBreakPos != null) {
       goTo(blockToBreakPos);
 
-      if (isNearEnough(blockToBreakPos)) {
+      if (isNearEnough(blockToBreakPos) && !isMoving()) {
         breakBlockWithTool(blockToBreakPos);
       }
     }
