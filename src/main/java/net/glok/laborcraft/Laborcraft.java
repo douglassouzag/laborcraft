@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.glok.laborcraft.entity.ModEntities;
 import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.glok.laborcraft.entity.custom.LumberjackEntity;
+import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
@@ -34,6 +35,10 @@ public class Laborcraft implements ModInitializer {
     FabricDefaultAttributeRegistry.register(
       ModEntities.LUMBERJACK,
       LumberjackEntity.createDefaultWorkerAttributes()
+    );
+    FabricDefaultAttributeRegistry.register(
+      ModEntities.NPC_ENTITY,
+      NPCEntity.createDefaultAttributes()
     );
   }
 }

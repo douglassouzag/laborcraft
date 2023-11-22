@@ -14,4 +14,9 @@ public class ModModelLayers {
     new Identifier(Laborcraft.MOD_ID, "lumberjack"),
     "main"
   );
+
+  public static final EntityModelLayer NPC_ENTITY = new EntityModelLayer(
+    new Identifier(Laborcraft.MOD_ID, "npc"),
+    "main"
+  );
 }
