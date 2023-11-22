@@ -1,6 +1,5 @@
 package net.glok.laborcraft.entity.client;
 
-import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -19,11 +18,6 @@ import net.minecraft.util.Identifier;
 
 public class DefaultWorkerRenderer
   extends MobEntityRenderer<DefaultWorkerEntity, PlayerEntityModel<DefaultWorkerEntity>> {
-
-  private static final Identifier TEXTURE = new Identifier(
-    Laborcraft.MOD_ID,
-    "textures/entity/default_worker.png"
-  );
 
   public DefaultWorkerRenderer(EntityRendererFactory.Context context) {
     super(
@@ -77,7 +71,7 @@ public class DefaultWorkerRenderer
 
   @Override
   public Identifier getTexture(DefaultWorkerEntity entity) {
-    return TEXTURE;
+    return entity.skin;
   }
 
   @Override

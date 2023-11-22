@@ -1,5 +1,6 @@
 package net.glok.laborcraft.entity.custom;
 
+import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.goals.BreakBlocksGoal;
 import net.glok.laborcraft.goals.CollectItemsGoal;
 import net.minecraft.block.Block;
@@ -7,6 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public class LumberjackEntity extends DefaultWorkerEntity {
@@ -16,7 +18,12 @@ public class LumberjackEntity extends DefaultWorkerEntity {
     World world
   ) {
     super(entityType, world);
-    this.name = "Lumberjack";
+    this.skin =
+      new Identifier(
+        Laborcraft.MOD_ID,
+        "textures/entity/profession/lumberjack.png"
+      );
+
     this.goalSelector.add(
         1,
         new CollectItemsGoal(
@@ -43,7 +50,7 @@ public class LumberjackEntity extends DefaultWorkerEntity {
         )
       );
     this.goalSelector.add(
-        2,
+        1,
         new BreakBlocksGoal(
           this,
           new Block[] {

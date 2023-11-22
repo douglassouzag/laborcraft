@@ -3,6 +3,7 @@ package net.glok.laborcraft.goals;
 import java.util.Arrays;
 import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.goal.Goal;
@@ -26,6 +27,8 @@ public class BreakBlocksGoal extends Goal {
   protected final Block[] blocksToBreak;
 
   protected final Item[] workTools;
+
+  private int lastBreakProgress = 0;
 
   public static Block[] naturalGroundBlocks = new Block[] {
     Blocks.GRASS_BLOCK,
@@ -105,7 +108,33 @@ public class BreakBlocksGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    return hasWorkTool();
+    return hasWorkTool() && this.mob.isCollectingItems == false;
+  }
+
+  public void breakBlockProgressively(BlockPos blockPos, ItemStack itemStack) {
+    Block block = this.mob.getWorld().getBlockState(blockPos).getBlock();
+    BlockState blockState = block.getDefaultState();
+
+    float miningSpeed =
+      itemStack.getMiningSpeedMultiplier(blockState) *
+      (1 - ((float) itemStack.getDamage() / itemStack.getMaxDamage()));
+
+    // Calculate breaking progress (0-10), more damage means slower breaking
+    int breakingProgress = (int) (
+      this.lastBreakProgress + Math.round((0.5 * miningSpeed))
+    );
+    if (breakingProgress >= 10) breakingProgress = 10;
+
+    this.mob.getWorld().setBlockBreakingInfo(0, blockPos, breakingProgress);
+    if (lastBreakProgress >= 10) {
+      this.lastBreakProgress = 0;
+      this.world.breakBlock(blockPos, true, mob);
+      if (workTools.length != 0) {
+        damageWorkTool();
+      }
+    } else {
+      this.lastBreakProgress = breakingProgress;
+    }
   }
 
   public BlockPos searchForNearestBlockToBreakInRange(double range) {
@@ -210,6 +239,10 @@ public class BreakBlocksGoal extends Goal {
   }
 
   public void replantTree(BlockPos blockPos, Block sappling) {
+    breakBlockProgressively(
+      blockPos,
+      this.mob.getEquippedStack(EquipmentSlot.MAINHAND)
+    );
     if (sappling != null) {
       this.world.setBlockState(blockPos, sappling.getDefaultState());
     }
@@ -226,18 +259,21 @@ public class BreakBlocksGoal extends Goal {
       this.mob.workerSwingHand(Hand.MAIN_HAND, true);
     }
 
-    this.world.breakBlock(blockPos, true, mob);
+    breakBlockProgressively(
+      blockPos,
+      mob.getEquippedStack(EquipmentSlot.MAINHAND)
+    );
 
-    if (wasTouchingGround) {
+    BlockState currBlockState = this.world.getBlockState(blockPos);
+
+    if (wasTouchingGround && currBlockState.getBlock() == Blocks.AIR) {
       replantTree(blockPos, sappling);
-    }
-    if (workTools.length != 0) {
-      damageWorkTool();
     }
   }
 
   @Override
   public void tick() {
+    this.mob.isBreakingBlocks = true;
     if (this.mob.boss != null) return;
     equipBestWorkTool();
 
@@ -253,7 +289,13 @@ public class BreakBlocksGoal extends Goal {
   }
 
   @Override
+  public boolean shouldContinue() {
+    return searchForNearestBlockToBreakInRange(16f) != null;
+  }
+
+  @Override
   public void stop() {
     unequipCurrentTool();
+    this.mob.isBreakingBlocks = false;
   }
 }

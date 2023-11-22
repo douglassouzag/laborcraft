@@ -66,8 +66,24 @@ public class CollectItemsGoal extends Goal {
   }
 
   @Override
+  public boolean shouldContinue() {
+    ItemEntity[] items =
+      this.getClosestItemEntities().toArray(new ItemEntity[0]);
+
+    for (ItemEntity item : items) {
+      if (isItemReachable(item)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @Override
   public boolean canStart() {
-    return isThereSlotEmptyOnInventory();
+    return (
+      isThereSlotEmptyOnInventory() && this.mob.isBreakingBlocks == false
+    );
   }
 
   public boolean isItemInWorkChunk(ItemEntity item) {
@@ -83,9 +99,13 @@ public class CollectItemsGoal extends Goal {
     return false;
   }
 
+  public boolean isItemReachable(ItemEntity item) {
+    return this.mob.getNavigation().isValidPosition(item.getBlockPos());
+  }
+
   public void collectNearbyItem(ItemEntity[] items) {
     DefaultedList<ItemStack> inventory = this.mob.getItems();
-    double thresholdDistance = 1.8f; // Set your desired distance threshold
+    double thresholdDistance = 1.8f;
 
     Arrays.sort(
       items,
@@ -93,7 +113,11 @@ public class CollectItemsGoal extends Goal {
     );
 
     for (ItemEntity item : items) {
-      if (item.getStack().isEmpty() || !isItemInWorkChunk(item)) {
+      if (
+        item.getStack().isEmpty() ||
+        !isItemInWorkChunk(item) ||
+        !isItemReachable(item)
+      ) {
         continue;
       }
       this.mob.getNavigation().startMovingTo(item, 0.5);
@@ -157,9 +181,16 @@ public class CollectItemsGoal extends Goal {
 
   @Override
   public void tick() {
+    this.mob.isCollectingItems = true;
+
     ItemEntity[] items =
       this.getClosestItemEntities().toArray(new ItemEntity[0]);
 
     this.collectNearbyItem(items);
+  }
+
+  @Override
+  public void stop() {
+    this.mob.isCollectingItems = false;
   }
 }
