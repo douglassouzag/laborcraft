@@ -1,4 +1,5 @@
 {
     "entity.laborcraft.default_worker": "Unemployed",
-    "entity.laborcraft.lumberjack": "Lumberjack"
+    "entity.laborcraft.lumberjack": "Lumberjack",
+    "entity.laborcraft.npc": "NPC"
 }
