@@ -18,7 +18,7 @@ public class Laborcraft implements ModInitializer {
   public static final String MOD_ID = "laborcraft";
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
   public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
-  public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER_2;
+
   public static final Identifier BOX = new Identifier(MOD_ID, "box_block");
 
   static {

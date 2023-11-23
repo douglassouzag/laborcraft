@@ -1,5 +1,10 @@
 {
     "entity.laborcraft.default_worker": "Unemployed",
     "entity.laborcraft.lumberjack": "Lumberjack",
-    "entity.laborcraft.npc": "NPC"
+    "entity.laborcraft.npc": "NPC",
+    "message.laborcraft.npc_work_area_reseted": "Work area reseted",
+    "message.laborcraft.npc_work_area_first_pos_added": "First position added",
+    "message.laborcraft.npc_work_area_second_pos_added": "Work area created",
+    "message.laborcraft.npc_chest_pos_added": "I will deposit my items here",
+    "message.laborcraft.npc_bed_pos_added": "I will sleep here"
 }
