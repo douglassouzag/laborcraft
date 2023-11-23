@@ -4,9 +4,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.world.World;
 
-public class FarmerNPCEntity extends WorkerNPCEntity {
+public abstract class PassiveNPCEntity extends NPCEntity {
 
-  public FarmerNPCEntity(
+  public PassiveNPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
     World world
   ) {

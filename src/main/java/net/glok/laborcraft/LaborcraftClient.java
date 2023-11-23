@@ -29,6 +29,26 @@ public class LaborcraftClient implements ClientModInitializer {
       NPCRenderer::new
     );
 
+    EntityRendererRegistry.register(
+      ModEntities.MINER_NPC_ENTITY,
+      NPCRenderer::new
+    );
+
+    EntityRendererRegistry.register(
+      ModEntities.GUARD_NPC_ENTITY,
+      NPCRenderer::new
+    );
+
+    EntityRendererRegistry.register(
+      ModEntities.MERCENARY_NPC_ENTITY,
+      NPCRenderer::new
+    );
+
+    EntityRendererRegistry.register(
+      ModEntities.BANDIT_NPC_ENTITY,
+      NPCRenderer::new
+    );
+
     HandledScreens.register(Laborcraft.BOX_SCREEN_HANDLER, BoxScreen::new);
   }
 }

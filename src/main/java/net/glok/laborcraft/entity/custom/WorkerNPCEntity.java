@@ -7,9 +7,9 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public abstract class NPCWorkerEntity extends NPCEntity {
+public abstract class WorkerNPCEntity extends PassiveNPCEntity {
 
-  public NPCWorkerEntity(
+  public WorkerNPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
     World world
   ) {
