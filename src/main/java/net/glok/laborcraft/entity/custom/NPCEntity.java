@@ -23,16 +23,14 @@ import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
-public class NPCEntity
+public abstract class NPCEntity
   extends PathAwareEntity
   implements NamedScreenHandlerFactory, ImplementedInventory {
 
@@ -42,10 +40,10 @@ public class NPCEntity
   //Player Setup
   private BlockPos firstWorkPosition;
   private BlockPos secondWorkPosition;
-  private Box workArea;
-  private BlockPos bedPosition;
-  private BlockPos chestPosition;
-  private PlayerEntity owner;
+  public Box workArea;
+  public BlockPos bedPosition;
+  public BlockPos chestPosition;
+  public PlayerEntity owner;
 
   //Constants
   private final int handSwingDuration = 7;
@@ -54,8 +52,8 @@ public class NPCEntity
     ItemStack.EMPTY
   );
 
-  private final Item followItem = Items.STICK;
-  private final Item setupItem = Items.COMPASS;
+  public static final Item followItem = Items.STICK;
+  public static Item setupItem = Items.COMPASS;
 
   public NPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
@@ -232,18 +230,6 @@ public class NPCEntity
         }
       }
     }
-  }
-
-  @Nullable
-  @Override
-  public ActionResult interactMob(PlayerEntity player, Hand hand) {
-    if (player.getStackInHand(hand).getItem() == followItem) {
-      setOwner(player);
-    } else {
-      openNPCInventory(player);
-    }
-
-    return ActionResult.SUCCESS;
   }
 
   @Override

@@ -1,7 +1,7 @@
 package net.glok.laborcraft.goals;
 
 import java.util.Arrays;
-import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
+import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,12 +13,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 public class BreakBlocksGoal extends Goal {
 
-  protected final DefaultWorkerEntity mob;
+  protected final NPCEntity mob;
   protected final EntityNavigation entityNavigation;
   protected final World world;
   protected final DefaultedList<ItemStack> inventory;
@@ -39,7 +38,7 @@ public class BreakBlocksGoal extends Goal {
   };
 
   public BreakBlocksGoal(
-    DefaultWorkerEntity mob,
+    NPCEntity mob,
     Block[] blocksToBreak,
     Item[] workTools,
     boolean replantTrees
@@ -108,7 +107,7 @@ public class BreakBlocksGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    return hasWorkTool() && this.mob.isCollectingItems == false;
+    return hasWorkTool();
   }
 
   public void breakBlockProgressively(BlockPos blockPos, ItemStack itemStack) {
@@ -159,10 +158,7 @@ public class BreakBlocksGoal extends Goal {
           BlockPos blockPos = new BlockPos(x, y, z);
           Block block = this.world.getBlockState(blockPos).getBlock();
 
-          if (
-            Arrays.asList(blocksToBreak).contains(block) &&
-            isBlockInWorkChunk(blockPos)
-          ) {
+          if (Arrays.asList(blocksToBreak).contains(block)) {
             double distance = pos.getManhattanDistance(blockPos);
             if (distance < nearestDistance) {
               nearestDistance = distance;
@@ -173,11 +169,6 @@ public class BreakBlocksGoal extends Goal {
       }
     }
     return nearestBlockToBreak;
-  }
-
-  private boolean isBlockInWorkChunk(BlockPos blockPos) {
-    ChunkPos chunkPos = new ChunkPos(blockPos);
-    return chunkPos.equals(this.mob.workChunk);
   }
 
   private void goTo(BlockPos blockPos) {
@@ -256,7 +247,7 @@ public class BreakBlocksGoal extends Goal {
       .lookAt(blockPos.getX(), blockPos.getY(), blockPos.getZ());
 
     if (!this.mob.handSwinging) {
-      this.mob.workerSwingHand(Hand.MAIN_HAND, true);
+      this.mob.swingHand(Hand.MAIN_HAND, true);
     }
 
     breakBlockProgressively(
@@ -273,8 +264,7 @@ public class BreakBlocksGoal extends Goal {
 
   @Override
   public void tick() {
-    this.mob.isBreakingBlocks = true;
-    if (this.mob.boss != null) return;
+    if (this.mob.owner != null) return;
     equipBestWorkTool();
 
     BlockPos blockToBreakPos = searchForNearestBlockToBreakInRange(16f);
@@ -296,6 +286,5 @@ public class BreakBlocksGoal extends Goal {
   @Override
   public void stop() {
     unequipCurrentTool();
-    this.mob.isBreakingBlocks = false;
   }
 }

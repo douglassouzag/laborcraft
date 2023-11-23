@@ -4,8 +4,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.glok.laborcraft.entity.ModEntities;
-import net.glok.laborcraft.entity.custom.DefaultWorkerEntity;
-import net.glok.laborcraft.entity.custom.LumberjackEntity;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
@@ -29,15 +27,11 @@ public class Laborcraft implements ModInitializer {
   @Override
   public void onInitialize() {
     FabricDefaultAttributeRegistry.register(
-      ModEntities.DEFAULT_WORKER,
-      DefaultWorkerEntity.createDefaultWorkerAttributes()
+      ModEntities.LUMBERJACK_NPC_ENTITY,
+      NPCEntity.createDefaultAttributes()
     );
     FabricDefaultAttributeRegistry.register(
-      ModEntities.LUMBERJACK,
-      LumberjackEntity.createDefaultWorkerAttributes()
-    );
-    FabricDefaultAttributeRegistry.register(
-      ModEntities.NPC_ENTITY,
+      ModEntities.FARMER_NPC_ENTITY,
       NPCEntity.createDefaultAttributes()
     );
   }
