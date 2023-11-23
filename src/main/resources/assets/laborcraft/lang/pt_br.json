@@ -1,7 +1,6 @@
 {
-    "entity.laborcraft.default_worker": "Desempregado",
-    "entity.laborcraft.lumberjack": "Lenhador",
-    "entity.laborcraft.npc": "NPC",
+    "entity.laborcraft.lumberjack_npc": "Lenhador",
+    "entity.laborcraft.farmer_npc": "Fazendeiro",
     "message.laborcraft.npc_work_area_reseted": "Área de trabalho resetada",
     "message.laborcraft.npc_work_area_first_pos_added": "Primeira posição adicionada, qual é a segunda posição?",
     "message.laborcraft.npc_work_area_second_pos_added": "Ok. Vou trabalhar nessa área",
