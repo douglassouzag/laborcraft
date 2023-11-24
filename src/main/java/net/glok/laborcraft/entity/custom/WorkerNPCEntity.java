@@ -5,15 +5,17 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public abstract class WorkerNPCEntity extends PassiveNPCEntity {
 
   public WorkerNPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
-    World world
+    World world,
+    Identifier texture
   ) {
-    super(entityType, world);
+    super(entityType, world, texture);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package net.glok.laborcraft.entity.custom;
 
+import net.glok.laborcraft.goals.FindBedToSleepAtNightGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.glok.laborcraft.util.ImplementedInventory;
@@ -8,6 +9,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.AttackGoal;
+import net.minecraft.entity.ai.goal.LongDoorInteractGoal;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.WanderAroundGoal;
+import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
@@ -24,6 +32,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -51,15 +60,42 @@ public abstract class NPCEntity
     27,
     ItemStack.EMPTY
   );
+  public Identifier texture;
 
   public static final Item followItem = Items.STICK;
   public static Item setupItem = Items.COMPASS;
 
   public NPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
-    World world
+    World world,
+    Identifier texture
   ) {
     super(entityType, world);
+    this.texture = texture;
+    MobNavigation mobNavigation = (MobNavigation) this.getNavigation();
+    mobNavigation.setCanPathThroughDoors(true);
+    mobNavigation.setCanEnterOpenDoors(true);
+    mobNavigation.setCanSwim(true);
+
+    this.setPathfindingPenalty(PathNodeType.WALKABLE_DOOR, 1f);
+    this.setPathfindingPenalty(PathNodeType.DOOR_OPEN, 1f);
+    this.setPathfindingPenalty(PathNodeType.DOOR_WOOD_CLOSED, 0.9f);
+    this.setPathfindingPenalty(PathNodeType.DOOR_IRON_CLOSED, 0.9f);
+
+    this.navigation = mobNavigation;
+  }
+
+  @Override
+  protected void initGoals() {
+    this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
+    this.goalSelector.add(1, new AttackGoal(this));
+    this.goalSelector.add(2, new FindBedToSleepAtNightGoal(this));
+    this.goalSelector.add(3, new WanderAroundGoal(this, 0.5f));
+    this.goalSelector.add(
+        4,
+        new LookAtEntityGoal(this, PlayerEntity.class, 6.0F)
+      );
+    this.goalSelector.add(5, new LookAroundGoal(this));
   }
 
   public static DefaultAttributeContainer.Builder createDefaultAttributes() {

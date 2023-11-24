@@ -66,6 +66,6 @@ public class NPCRenderer
 
   @Override
   public Identifier getTexture(NPCEntity entity) {
-    return new Identifier("minecraft", "textures/entity/player/wide/steve.png");
+    return entity.texture;
   }
 }

@@ -2,14 +2,16 @@ package net.glok.laborcraft.entity.custom;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public abstract class NeutralNPCEntity extends NPCEntity {
 
   public NeutralNPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
-    World world
+    World world,
+    Identifier texture
   ) {
-    super(entityType, world);
+    super(entityType, world, texture);
   }
 }

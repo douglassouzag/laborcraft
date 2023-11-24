@@ -18,12 +18,19 @@ import net.minecraft.util.Identifier;
 
 public class ModEntities {
 
+  private static final EntityDimensions npcDimensions = EntityDimensions.fixed(
+    0.6F,
+    1.95F
+  );
+
+  private static final SpawnGroup npcSpawnGroup = SpawnGroup.CREATURE;
+
   public static final EntityType<LumberjackNPCEntity> LUMBERJACK_NPC_ENTITY = Registry.register(
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "lumberjack_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, LumberjackNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, LumberjackNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
 
@@ -31,8 +38,8 @@ public class ModEntities {
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "farmer_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, FarmerNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, FarmerNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
 
@@ -40,8 +47,8 @@ public class ModEntities {
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "miner_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, MinerNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, MinerNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
 
@@ -49,24 +56,24 @@ public class ModEntities {
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "guard_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, GuardNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, GuardNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
   public static final EntityType<MercenaryNPCEntity> MERCENARY_NPC_ENTITY = Registry.register(
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "mercenary_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, MercenaryNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, MercenaryNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
   public static final EntityType<BanditNPCEntity> BANDIT_NPC_ENTITY = Registry.register(
     Registries.ENTITY_TYPE,
     new Identifier(Laborcraft.MOD_ID, "bandit_npc"),
     FabricEntityTypeBuilder
-      .create(SpawnGroup.CREATURE, BanditNPCEntity::new)
-      .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
+      .create(npcSpawnGroup, BanditNPCEntity::new)
+      .dimensions(npcDimensions)
       .build()
   );
 }
