@@ -129,6 +129,47 @@ public class InventoryHelper {
     }
   }
 
+  public boolean haveSpaceInChestForItems(
+    ChestBlockEntity chest,
+    Item[] items
+  ) {
+    int chestSize = chest.size();
+    for (Item item : items) {
+      ItemStack itemStack = new ItemStack(item);
+      for (int i = 0; i < chestSize; i++) {
+        ItemStack itemStackInChest = chest.getStack(i);
+        if (itemStackInChest.isEmpty()) {
+          return true;
+        }
+        if (
+          itemStack.isStackable() &&
+          ItemStack.areItemsEqual(itemStackInChest, itemStack) &&
+          itemStackInChest.getCount() < MAX_STACK_SIZE
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public boolean isChestFull(ChestBlockEntity chest) {
+    int chestSize = chest.size();
+    for (int i = 0; i < chestSize; i++) {
+      ItemStack itemStackInChest = chest.getStack(i);
+      if (
+        itemStackInChest.isEmpty() ||
+        (
+          itemStackInChest.isStackable() &&
+          itemStackInChest.getCount() < MAX_STACK_SIZE
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private boolean isInFilter(Item item, Item[] itemFilter) {
     for (Item filterItem : itemFilter) {
       if (item == filterItem) {
