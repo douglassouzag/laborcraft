@@ -264,7 +264,7 @@ public class BreakBlocksGoal extends Goal {
 
   @Override
   public void tick() {
-    if (this.mob.owner != null) return;
+    // if (this.mob.owner != null) return;
     equipBestWorkTool();
 
     BlockPos blockToBreakPos = searchForNearestBlockToBreakInRange(16f);
