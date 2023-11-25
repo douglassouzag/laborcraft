@@ -61,7 +61,6 @@ public class InventoryHelper {
         continue;
       }
 
-      boolean isAdded = false;
       if (itemStackFrom.getMaxCount() > 1) {
         for (int j = 0; j < chestSize; j++) {
           ItemStack itemStackTo = chest.getStack(j);
@@ -72,13 +71,17 @@ public class InventoryHelper {
             );
             itemStackTo.increment(transferCount);
             itemStackFrom.decrement(transferCount);
-            isAdded = true;
-            break;
+            if (itemStackFrom.getCount() == 0) {
+              break;
+            }
           }
         }
       }
 
-      if (!isAdded && itemStackFrom.getCount() <= MAX_STACK_SIZE) {
+      if (
+        itemStackFrom.getCount() > 0 &&
+        itemStackFrom.getCount() <= MAX_STACK_SIZE
+      ) {
         for (int j = 0; j < chestSize; j++) {
           ItemStack itemStackTo = chest.getStack(j);
           if (itemStackTo.isEmpty()) {
