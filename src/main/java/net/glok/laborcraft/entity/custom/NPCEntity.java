@@ -51,6 +51,7 @@ public abstract class NPCEntity
   //Player Setup
   private BlockPos firstWorkPosition;
   private BlockPos secondWorkPosition;
+  private PlayerEntity owner;
 
   //Persistent Data
   public String name;
@@ -58,7 +59,6 @@ public abstract class NPCEntity
   public Box workArea;
   public BlockPos bedPosition;
   public BlockPos chestPosition;
-  public PlayerEntity owner;
 
   //Constants
   private final int handSwingDuration = 7;
@@ -125,8 +125,25 @@ public abstract class NPCEntity
     if (nbt.contains("NPC.lastName")) {
       this.lastName = nbt.getString("NPC.lastName");
     }
-    if (nbt.contains("NPC.age")) {
-      this.age = nbt.getInt("NPC.age");
+
+    if (nbt.contains("NPC.bedPosition")) {
+      this.bedPosition = BlockPos.fromLong(nbt.getLong("NPC.bedPosition"));
+    }
+
+    if (nbt.contains("NPC.chestPosition")) {
+      this.chestPosition = BlockPos.fromLong(nbt.getLong("NPC.chestPosition"));
+    }
+
+    if (nbt.contains("NPC.workArea")) {
+      this.workArea =
+        new Box(
+          nbt.getDouble("NPC.workArea.x1"),
+          nbt.getDouble("NPC.workArea.y1"),
+          nbt.getDouble("NPC.workArea.z1"),
+          nbt.getDouble("NPC.workArea.x2"),
+          nbt.getDouble("NPC.workArea.y2"),
+          nbt.getDouble("NPC.workArea.z2")
+        );
     }
   }
 
@@ -137,6 +154,19 @@ public abstract class NPCEntity
     nbt.putString("NPC.name", this.name);
 
     nbt.putString("NPC.lastName", this.lastName);
+
+    nbt.putLong("NPC.bedPosition", this.bedPosition.asLong());
+
+    nbt.putLong("NPC.chestPosition", this.chestPosition.asLong());
+
+    if (this.workArea != null) {
+      nbt.putDouble("NPC.workArea.x1", this.workArea.minX);
+      nbt.putDouble("NPC.workArea.y1", this.workArea.minY);
+      nbt.putDouble("NPC.workArea.z1", this.workArea.minZ);
+      nbt.putDouble("NPC.workArea.x2", this.workArea.maxX);
+      nbt.putDouble("NPC.workArea.y2", this.workArea.maxY);
+      nbt.putDouble("NPC.workArea.z2", this.workArea.maxZ);
+    }
 
     return super.writeNbt(nbt);
   }
@@ -155,12 +185,16 @@ public abstract class NPCEntity
     return new BoxScreenHandler(syncId, playerInventory, this);
   }
 
+  public Text getDisplayText() {
+    return Text.of("");
+  }
+
   public void openNPCInventory(PlayerEntity player) {
     if (!player.getWorld().isClient()) {
       SimpleNamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
         (syncId, inventory, playerx) ->
           new BoxScreenHandler(syncId, inventory, this),
-        this.getDisplayName()
+        getDisplayText()
       );
 
       if (screenHandlerFactory != null) {
@@ -210,7 +244,7 @@ public abstract class NPCEntity
   }
 
   public void sendMessageToPlayer(PlayerEntity player, String message) {
-    player.sendMessage(Text.of("NPC : " + message));
+    player.sendMessage(Text.of(getCustomName() + ": " + message));
   }
 
   public void setWorkPosition(BlockPos blockPos) {
@@ -316,8 +350,16 @@ public abstract class NPCEntity
       this.lastName = namesHelper.getRandomLastName();
     }
 
-    if (this.age == 0) {
-      this.age = 18;
+    if (this.chestPosition == null) {
+      this.chestPosition = new BlockPos(0, 0, 0);
+    }
+
+    if (this.bedPosition == null) {
+      this.bedPosition = new BlockPos(0, 0, 0);
+    }
+
+    if (this.workArea == null) {
+      this.workArea = new Box(0, 0, 0, 0, 0, 0);
     }
   }
 

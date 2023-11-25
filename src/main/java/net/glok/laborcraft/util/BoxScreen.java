@@ -146,6 +146,7 @@ public class BoxScreen extends HandledScreen<BoxScreenHandler> {
   @Override
   protected void init() {
     super.init();
-    titleY = -9999;
+    titleX = 62;
+    titleY = 12;
   }
 }
