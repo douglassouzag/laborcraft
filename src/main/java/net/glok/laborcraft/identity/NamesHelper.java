@@ -2,7 +2,7 @@ package net.glok.laborcraft.identity;
 
 import net.glok.laborcraft.identity.Enums.Gender;
 
-public class Names {
+public class NamesHelper {
 
   public String getRandomName(Gender gender) {
     if (gender == Gender.MALE) {

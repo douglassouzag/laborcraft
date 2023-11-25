@@ -1,7 +1,7 @@
 package net.glok.laborcraft.util;
 
 import net.glok.laborcraft.Laborcraft;
-import net.glok.laborcraft.helpers.PlayerHelper;
+import net.glok.laborcraft.helpers.ClientInfoManager;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -15,7 +15,6 @@ public class BoxScreenHandler extends ScreenHandler {
 
   private final Inventory inventory;
   public LivingEntity livingEntity;
-  private final PlayerHelper playerHelper = new PlayerHelper();
 
   public BoxScreenHandler(int syncId, PlayerInventory playerInventory) {
     this(syncId, playerInventory, new SimpleInventory(27));
@@ -30,8 +29,7 @@ public class BoxScreenHandler extends ScreenHandler {
     checkSize(inventory, 27);
     this.inventory = inventory;
     inventory.onOpen(playerInventory.player);
-    this.livingEntity =
-      playerHelper.getClosestNPCEntity(playerInventory.player);
+    this.livingEntity = ClientInfoManager.getLastInteractedEntity();
 
     int m;
     int l;

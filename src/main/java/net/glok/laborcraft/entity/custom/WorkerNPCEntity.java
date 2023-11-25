@@ -22,6 +22,8 @@ public abstract class WorkerNPCEntity extends PassiveNPCEntity {
   public ActionResult interactMob(PlayerEntity player, Hand hand) {
     if (player.getStackInHand(hand).getItem() == NPCEntity.followItem) {
       setOwner(player);
+      player.setAttacker(this);
+
       return ActionResult.SUCCESS;
     } else {
       openNPCInventory(player);

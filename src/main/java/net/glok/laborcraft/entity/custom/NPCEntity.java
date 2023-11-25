@@ -2,6 +2,8 @@ package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.goals.FindBedToSleepAtNightGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
+import net.glok.laborcraft.identity.Enums.Gender;
+import net.glok.laborcraft.identity.NamesHelper;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.glok.laborcraft.util.ImplementedInventory;
 import net.minecraft.block.BedBlock;
@@ -45,10 +47,14 @@ public abstract class NPCEntity
 
   //Helpers
   PlayerHelper playerHelper = new PlayerHelper();
-
+  NamesHelper namesHelper = new NamesHelper();
   //Player Setup
   private BlockPos firstWorkPosition;
   private BlockPos secondWorkPosition;
+
+  //Persistent Data
+  public String name;
+  public String lastName;
   public Box workArea;
   public BlockPos bedPosition;
   public BlockPos chestPosition;
@@ -72,6 +78,8 @@ public abstract class NPCEntity
   ) {
     super(entityType, world);
     this.texture = texture;
+    setupNPCData();
+
     MobNavigation mobNavigation = (MobNavigation) this.getNavigation();
     mobNavigation.setCanPathThroughDoors(true);
     mobNavigation.setCanEnterOpenDoors(true);
@@ -110,11 +118,25 @@ public abstract class NPCEntity
   public void readNbt(NbtCompound nbt) {
     super.readNbt(nbt);
     Inventories.readNbt(nbt, inventory);
+
+    if (nbt.contains("NPC.name")) {
+      this.name = nbt.getString("NPC.name");
+    }
+    if (nbt.contains("NPC.lastName")) {
+      this.lastName = nbt.getString("NPC.lastName");
+    }
+    if (nbt.contains("NPC.age")) {
+      this.age = nbt.getInt("NPC.age");
+    }
   }
 
   @Override
   public NbtCompound writeNbt(NbtCompound nbt) {
     Inventories.writeNbt(nbt, inventory);
+
+    nbt.putString("NPC.name", this.name);
+
+    nbt.putString("NPC.lastName", this.lastName);
 
     return super.writeNbt(nbt);
   }
@@ -285,6 +307,20 @@ public abstract class NPCEntity
     super.onKilledBy(adversary);
   }
 
+  public void setupNPCData() {
+    if (this.name == null) {
+      this.name = namesHelper.getRandomName(Gender.MALE);
+    }
+
+    if (this.lastName == null) {
+      this.lastName = namesHelper.getRandomLastName();
+    }
+
+    if (this.age == 0) {
+      this.age = 18;
+    }
+  }
+
   @Override
   public void tick() {
     super.tick();
@@ -297,6 +333,10 @@ public abstract class NPCEntity
     followOwner();
 
     checkForOwnerCommands();
+
+    if (this.getCustomName() == null && this.name != null) {
+      this.setCustomName(Text.of(this.name + " " + this.lastName));
+    }
 
     this.setCustomNameVisible(true);
   }

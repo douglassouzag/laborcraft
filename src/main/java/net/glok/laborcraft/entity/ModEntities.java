@@ -3,7 +3,6 @@ package net.glok.laborcraft.entity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.entity.custom.BanditNPCEntity;
-import net.glok.laborcraft.entity.custom.ButcherNPCEntity;
 import net.glok.laborcraft.entity.custom.FarmerNPCEntity;
 import net.glok.laborcraft.entity.custom.GuardNPCEntity;
 import net.glok.laborcraft.entity.custom.LumberjackNPCEntity;

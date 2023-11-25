@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRe
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.glok.laborcraft.entity.ModEntities;
 import net.glok.laborcraft.entity.custom.NPCEntity;
+import net.glok.laborcraft.helpers.PlayerInteractListener;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
@@ -26,6 +27,9 @@ public class Laborcraft implements ModInitializer {
 
   @Override
   public void onInitialize() {
+    PlayerInteractListener interactListener = new PlayerInteractListener();
+    interactListener.init();
+
     FabricDefaultAttributeRegistry.register(
       ModEntities.LUMBERJACK_NPC_ENTITY,
       NPCEntity.createDefaultAttributes()
