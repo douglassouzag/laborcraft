@@ -20,9 +20,7 @@ public class FindBedToSleepAtNightGoal extends Goal {
     this.npc.getNavigation()
       .startMovingTo(bedPos.getX(), bedPos.getY(), bedPos.getZ(), 0.5f);
 
-    // Check if the NPC is stuck
     if (this.npc.getNavigation().isIdle()) {
-      System.out.println("NPC is stuck");
       this.npc.getNavigation()
         .startMovingTo(bedPos.getX(), bedPos.getY(), bedPos.getZ(), 0.5f);
     }
@@ -52,7 +50,7 @@ public class FindBedToSleepAtNightGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    return isNightTime() && this.npc.bedPosition != null;
+    return isNightTime() && this.npc.isBedPositionValid();
   }
 
   @Override

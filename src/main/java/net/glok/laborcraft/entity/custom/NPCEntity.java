@@ -292,6 +292,18 @@ public abstract class NPCEntity
     this.chestPosition = blockPos;
   }
 
+  public boolean isWorkAreaValid() {
+    return this.workArea != new Box(0, 0, 0, 0, 0, 0);
+  }
+
+  public boolean isBedPositionValid() {
+    return this.bedPosition != new BlockPos(0, 0, 0);
+  }
+
+  public boolean isChestPositionValid() {
+    return this.chestPosition != new BlockPos(0, 0, 0);
+  }
+
   public void checkForOwnerCommands() {
     if (this.owner != null) {
       if (
