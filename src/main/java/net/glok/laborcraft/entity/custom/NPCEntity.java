@@ -1,7 +1,6 @@
 package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.goals.FindBedToSleepAtNightGoal;
-import net.glok.laborcraft.goals.SmartDoorInteractGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
 import net.glok.laborcraft.identity.Enums.Gender;
 import net.glok.laborcraft.identity.NamesHelper;
@@ -13,6 +12,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.AttackGoal;
+import net.minecraft.entity.ai.goal.LongDoorInteractGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
@@ -22,6 +22,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -95,7 +96,7 @@ public abstract class NPCEntity
 
   @Override
   protected void initGoals() {
-    this.goalSelector.add(1, new SmartDoorInteractGoal(this, true));
+    this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
     this.goalSelector.add(1, new AttackGoal(this));
     this.goalSelector.add(2, new FindBedToSleepAtNightGoal(this));
     this.goalSelector.add(3, new WanderAroundGoal(this, 0.5f));
@@ -111,7 +112,8 @@ public abstract class NPCEntity
       .createMobAttributes()
       .add(EntityAttributes.GENERIC_MAX_HEALTH, 15)
       .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.5f)
-      .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 0.5f);
+      .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 0.5f)
+      .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 50.0);
   }
 
   @Override
