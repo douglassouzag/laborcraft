@@ -94,6 +94,15 @@ public class InventoryHelper {
     }
   }
 
+  public boolean isInventoryFull(DefaultedList<ItemStack> inventory) {
+    for (ItemStack itemStack : inventory) {
+      if (itemStack.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public void transferItemsFromChest(
     ChestBlockEntity chest,
     DefaultedList<ItemStack> transferTo,

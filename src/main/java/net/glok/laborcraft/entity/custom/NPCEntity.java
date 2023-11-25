@@ -1,6 +1,7 @@
 package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.goals.FindBedToSleepAtNightGoal;
+import net.glok.laborcraft.goals.SmartDoorInteractGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
 import net.glok.laborcraft.identity.Enums.Gender;
 import net.glok.laborcraft.identity.NamesHelper;
@@ -12,7 +13,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.AttackGoal;
-import net.minecraft.entity.ai.goal.LongDoorInteractGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
@@ -62,7 +62,7 @@ public abstract class NPCEntity
 
   //Constants
   private final int handSwingDuration = 7;
-  private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(
+  public final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(
     27,
     ItemStack.EMPTY
   );
@@ -95,7 +95,7 @@ public abstract class NPCEntity
 
   @Override
   protected void initGoals() {
-    this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
+    this.goalSelector.add(1, new SmartDoorInteractGoal(this, true));
     this.goalSelector.add(1, new AttackGoal(this));
     this.goalSelector.add(2, new FindBedToSleepAtNightGoal(this));
     this.goalSelector.add(3, new WanderAroundGoal(this, 0.5f));
@@ -267,6 +267,7 @@ public abstract class NPCEntity
     if (this.firstWorkPosition != null) {
       this.secondWorkPosition = blockPos;
       this.workArea = new Box(this.firstWorkPosition, this.secondWorkPosition);
+
       sendMessageToPlayer(
         this.owner,
         Text

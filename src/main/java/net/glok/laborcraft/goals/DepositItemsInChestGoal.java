@@ -26,7 +26,9 @@ public class DepositItemsInChestGoal extends Goal {
       if (!itemStack.isEmpty()) {
         Item item = itemStack.getItem();
         for (Item depositItem : itemsToDeposit) {
-          if (item == depositItem) {
+          if (
+            item == depositItem && itemStack.getCount() >= item.getMaxCount()
+          ) {
             return true;
           }
         }

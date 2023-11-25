@@ -1,79 +1,123 @@
 package net.glok.laborcraft.goals;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
 import net.minecraft.entity.ai.NavigationConditions;
-import net.minecraft.entity.ai.goal.DoorInteractGoal;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.BlockPos;
 
-public class SmartDoorInteractGoal extends DoorInteractGoal {
+public class SmartDoorInteractGoal extends Goal {
+
+  protected MobEntity mob;
+  protected BlockPos doorPos;
+  protected boolean doorValid;
 
   private final boolean delayedClose;
   private int ticksLeft;
 
   public SmartDoorInteractGoal(MobEntity mob, boolean delayedClose) {
-    super(mob);
+    this.doorPos = BlockPos.ORIGIN;
     this.mob = mob;
     this.delayedClose = delayedClose;
   }
 
-  @Override
+  protected boolean isDoorOpen() {
+    if (!this.doorValid) {
+      return false;
+    } else {
+      BlockState blockState = this.mob.getWorld().getBlockState(this.doorPos);
+      if (!(blockState.getBlock() instanceof DoorBlock)) {
+        this.doorValid = false;
+        return false;
+      } else {
+        return (Boolean) blockState.get(DoorBlock.OPEN);
+      }
+    }
+  }
+
+  protected void setDoorOpen(boolean open) {
+    if (this.doorValid) {
+      BlockState blockState = this.mob.getWorld().getBlockState(this.doorPos);
+      if (blockState.getBlock() instanceof DoorBlock) {
+        ((DoorBlock) blockState.getBlock()).setOpen(
+            this.mob,
+            this.mob.getWorld(),
+            blockState,
+            this.doorPos,
+            open
+          );
+      }
+    }
+  }
+
+  public boolean canStart() {
+    if (!NavigationConditions.hasMobNavigation(this.mob)) {
+      return false;
+    } else if (!this.mob.horizontalCollision) {
+      return false;
+    } else {
+      MobNavigation mobNavigation = (MobNavigation) this.mob.getNavigation();
+      Path path = mobNavigation.getCurrentPath();
+      if (
+        path != null && !path.isFinished() && mobNavigation.canEnterOpenDoors()
+      ) {
+        for (
+          int i = 0;
+          i < Math.min(path.getCurrentNodeIndex() + 2, path.getLength());
+          ++i
+        ) {
+          PathNode pathNode = path.getNode(i);
+          this.doorPos = new BlockPos(pathNode.x, pathNode.y + 1, pathNode.z);
+          if (
+            !(
+              this.mob.squaredDistanceTo(
+                  (double) this.doorPos.getX(),
+                  this.mob.getY(),
+                  (double) this.doorPos.getZ()
+                ) >
+              2.25
+            )
+          ) {
+            this.doorValid =
+              DoorBlock.canOpenByHand(this.mob.getWorld(), this.doorPos);
+            if (this.doorValid) {
+              return true;
+            }
+          }
+        }
+
+        this.doorPos = this.mob.getBlockPos().up();
+        this.doorValid =
+          DoorBlock.canOpenByHand(this.mob.getWorld(), this.doorPos);
+        return this.doorValid;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  public boolean shouldRunEveryTick() {
+    return true;
+  }
+
   public boolean shouldContinue() {
     return this.delayedClose && this.ticksLeft > 0 && super.shouldContinue();
   }
 
-  @Override
   public void start() {
-    this.ticksLeft = 30;
+    this.ticksLeft = 20;
     this.setDoorOpen(true);
   }
 
-  @Override
   public void stop() {
-    if (mob.getRandom().nextBoolean()) this.setDoorOpen(false);
+    this.setDoorOpen(false);
   }
 
-  @Override
-  public boolean canStart() {
-    if (
-      !NavigationConditions.hasMobNavigation(this.mob) ||
-      !this.mob.horizontalCollision
-    ) return false;
-
-    MobNavigation mobNavigation = (MobNavigation) this.mob.getNavigation();
-    Path path = mobNavigation.getCurrentPath();
-    if (
-      path == null || path.isFinished() || !mobNavigation.canEnterOpenDoors()
-    ) return false;
-
-    for (
-      int i = 0;
-      i < Math.min(path.getCurrentNodeIndex() + 2, path.getLength());
-      ++i
-    ) {
-      PathNode pathNode = path.getNode(i);
-      this.doorPos = new BlockPos(pathNode.x, pathNode.y + 1, pathNode.z);
-      if (
-        this.mob.squaredDistanceTo(
-            this.doorPos.getX(),
-            this.mob.getY(),
-            this.doorPos.getZ()
-          ) >
-        2.0
-      ) continue;
-      this.doorValid = true;
-      return true;
-    }
-    this.doorPos = this.mob.getBlockPos().up();
-    this.doorValid = true;
-    return true;
-  }
-
-  @Override
   public void tick() {
     --this.ticksLeft;
-    super.tick();
   }
 }
