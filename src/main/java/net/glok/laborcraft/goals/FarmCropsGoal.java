@@ -1,5 +1,6 @@
 package net.glok.laborcraft.goals;
 
+import java.util.Arrays;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
@@ -26,15 +27,24 @@ public class FarmCropsGoal extends Goal {
     Items.BEETROOT_SEEDS,
   };
 
+  private final Block[] cropsToLookFor = new Block[] {
+    Blocks.WHEAT,
+    Blocks.POTATOES,
+    Blocks.CARROTS,
+    Blocks.BEETROOTS,
+  };
+
+  private Block lastCropHarvested;
+
   public FarmCropsGoal(NPCEntity npc) {
     this.npc = npc;
   }
 
   public boolean isThereAnyEmptyFarmland(Box workArea) {
     World world = npc.getEntityWorld();
-    for (double x = workArea.minX; x < workArea.maxX; x++) {
-      for (double y = workArea.minY; y < workArea.maxY; y++) {
-        for (double z = workArea.minZ; z < workArea.maxZ; z++) {
+    for (double x = workArea.minX; x <= workArea.maxX; x++) {
+      for (double y = workArea.minY; y <= workArea.maxY; y++) {
+        for (double z = workArea.minZ; z <= workArea.maxZ; z++) {
           int xPos = (int) x;
           int yPos = (int) y;
           int zPos = (int) z;
@@ -53,15 +63,15 @@ public class FarmCropsGoal extends Goal {
 
   public boolean isThereAnyCropsMature(Box workArea) {
     World world = npc.getEntityWorld();
-    for (double x = workArea.minX; x < workArea.maxX; x++) {
-      for (double y = workArea.minY; y < workArea.maxY; y++) {
-        for (double z = workArea.minZ; z < workArea.maxZ; z++) {
+    for (double x = workArea.minX; x <= workArea.maxX; x++) {
+      for (double y = workArea.minY; y <= workArea.maxY; y++) {
+        for (double z = workArea.minZ; z <= workArea.maxZ; z++) {
           int xPos = (int) x;
           int yPos = (int) y;
           int zPos = (int) z;
           BlockPos pos = new BlockPos(xPos, yPos, zPos);
           Block block = world.getBlockState(pos).getBlock();
-          if (block == Blocks.WHEAT) {
+          if (Arrays.asList(this.cropsToLookFor).contains(block)) {
             if (((CropBlock) block).isMature(world.getBlockState(pos))) {
               return true;
             }
@@ -86,9 +96,13 @@ public class FarmCropsGoal extends Goal {
 
   public BlockPos findNearestEmptyFarmLand() {
     World world = npc.getEntityWorld();
-    for (double x = npc.workArea.minX; x < npc.workArea.maxX; x++) {
-      for (double y = npc.workArea.minY; y < npc.workArea.maxY; y++) {
-        for (double z = npc.workArea.minZ; z < npc.workArea.maxZ; z++) {
+    BlockPos npcPos = this.npc.getBlockPos();
+    BlockPos closestPos = null;
+    double closestDistance = Double.MAX_VALUE;
+
+    for (double x = npc.workArea.minX; x <= npc.workArea.maxX; x++) {
+      for (double y = npc.workArea.minY; y <= npc.workArea.maxY; y++) {
+        for (double z = npc.workArea.minZ; z <= npc.workArea.maxZ; z++) {
           int xPos = (int) x;
           int yPos = (int) y;
           int zPos = (int) z;
@@ -97,12 +111,17 @@ public class FarmCropsGoal extends Goal {
           if (
             block == Blocks.FARMLAND && world.getBlockState(pos.up()).isAir()
           ) {
-            return pos;
+            double distance = pos.getSquaredDistance(npcPos);
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestPos = pos;
+            }
           }
         }
       }
     }
-    return null;
+
+    return closestPos;
   }
 
   public BlockPos findNearestMatureCrop() {
@@ -111,15 +130,15 @@ public class FarmCropsGoal extends Goal {
     BlockPos closestPos = null;
     double closestDistance = Double.MAX_VALUE;
 
-    for (double x = npc.workArea.minX; x < npc.workArea.maxX; x++) {
-      for (double y = npc.workArea.minY; y < npc.workArea.maxY; y++) {
-        for (double z = npc.workArea.minZ; z < npc.workArea.maxZ; z++) {
+    for (double x = npc.workArea.minX; x <= npc.workArea.maxX; x++) {
+      for (double y = npc.workArea.minY; y <= npc.workArea.maxY; y++) {
+        for (double z = npc.workArea.minZ; z <= npc.workArea.maxZ; z++) {
           int xPos = (int) x;
           int yPos = (int) y;
           int zPos = (int) z;
           BlockPos pos = new BlockPos(xPos, yPos, zPos);
           Block block = world.getBlockState(pos).getBlock();
-          if (block == Blocks.WHEAT) {
+          if (Arrays.asList(this.cropsToLookFor).contains(block)) {
             if (((CropBlock) block).isMature(world.getBlockState(pos))) {
               double distance = playerPos.getSquaredDistance(xPos, yPos, zPos);
               if (distance < closestDistance) {
@@ -149,7 +168,10 @@ public class FarmCropsGoal extends Goal {
         if (itemStack.getItem() == seed) {
           this.npc.swingHand(Hand.MAIN_HAND);
           this.npc.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
-          world.setBlockState(pos.up(), Blocks.WHEAT.getDefaultState());
+          world.setBlockState(
+            pos.up(),
+            getRightBlock(itemStack.getItem()).getDefaultState()
+          );
           itemStack.decrement(1);
           return;
         }
@@ -157,10 +179,30 @@ public class FarmCropsGoal extends Goal {
     }
   }
 
+  public void plantEspecificSeedFromInventory(
+    BlockPos pos,
+    Item especificSeed
+  ) {
+    World world = npc.getEntityWorld();
+
+    for (ItemStack itemStack : npc.getItems()) {
+      if (itemStack.getItem() == especificSeed) {
+        this.npc.swingHand(Hand.MAIN_HAND);
+        this.npc.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
+        world.setBlockState(
+          pos.up(),
+          getRightBlock(especificSeed).getDefaultState()
+        );
+        itemStack.decrement(1);
+        return;
+      }
+    }
+  }
+
   public void harvestCrop(BlockPos pos) {
     World world = npc.getEntityWorld();
     Block block = world.getBlockState(pos).getBlock();
-    if (block == Blocks.WHEAT) {
+    if (Arrays.asList(this.cropsToLookFor).contains(block)) {
       this.npc.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
       this.npc.swingHand(Hand.MAIN_HAND);
 
@@ -186,19 +228,54 @@ public class FarmCropsGoal extends Goal {
     );
   }
 
+  public Item getAppropriateSeed(Block lastCropHarvested) {
+    if (lastCropHarvested == Blocks.WHEAT) {
+      return Items.WHEAT_SEEDS;
+    } else if (lastCropHarvested == Blocks.POTATOES) {
+      return Items.POTATO;
+    } else if (lastCropHarvested == Blocks.CARROTS) {
+      return Items.CARROT;
+    } else if (lastCropHarvested == Blocks.BEETROOTS) {
+      return Items.BEETROOT_SEEDS;
+    } else {
+      return null;
+    }
+  }
+
+  private Block getRightBlock(Item plantedSeed) {
+    if (plantedSeed == Items.WHEAT_SEEDS) {
+      return Blocks.WHEAT;
+    } else if (plantedSeed == Items.POTATO) {
+      return Blocks.POTATOES;
+    } else if (plantedSeed == Items.CARROT) {
+      return Blocks.CARROTS;
+    } else if (plantedSeed == Items.BEETROOT_SEEDS) {
+      return Blocks.BEETROOTS;
+    } else {
+      return null;
+    }
+  }
+
   @Override
   public void tick() {
     BlockPos emptyFarmLand = findNearestEmptyFarmLand();
     if (emptyFarmLand != null && haveAnySeedsInInventory()) {
       goTo(emptyFarmLand);
       if (isNearEnough(emptyFarmLand)) {
-        plantAnySeedsFromInventory(emptyFarmLand);
+        if (lastCropHarvested != null) {
+          Item seed = getAppropriateSeed(lastCropHarvested);
+          plantEspecificSeedFromInventory(emptyFarmLand, seed);
+        } else {
+          plantAnySeedsFromInventory(emptyFarmLand);
+        }
       }
     } else {
       BlockPos matureCrop = findNearestMatureCrop();
       if (matureCrop != null) {
         goTo(matureCrop);
         if (isNearEnough(matureCrop)) {
+          lastCropHarvested =
+            npc.getEntityWorld().getBlockState(matureCrop).getBlock();
           harvestCrop(matureCrop);
         }
       }

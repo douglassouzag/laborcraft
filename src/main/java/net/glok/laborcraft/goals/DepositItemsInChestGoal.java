@@ -3,6 +3,8 @@ package net.glok.laborcraft.goals;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
+import net.minecraft.block.Block;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
@@ -27,9 +29,7 @@ public class DepositItemsInChestGoal extends Goal {
       if (!itemStack.isEmpty()) {
         Item item = itemStack.getItem();
         for (Item depositItem : itemsToDeposit) {
-          if (
-            item == depositItem && itemStack.getCount() >= item.getMaxCount()
-          ) {
+          if (item == depositItem) {
             return true;
           }
         }
@@ -83,14 +83,20 @@ public class DepositItemsInChestGoal extends Goal {
       .getBlockEntity(this.npc.chestPosition);
 
     if (chest == null) return false;
-
     return (
       haveItemsToDeposit() &&
       this.npc.isChestPositionValid() &&
       inventoryHelper.haveSpaceInChestForItems(chest, itemsToDeposit) &&
       !inventoryHelper.isChestFull(chest) &&
-      this.npc.currentState == StateEnum.DEPOSITING
+      this.npc.currentState == StateEnum.DEPOSITING &&
+      isChestStillThere(this.npc.chestPosition)
     );
+  }
+
+  public boolean isChestStillThere(BlockPos chestPos) {
+    Block chestBlock =
+      this.npc.getEntityWorld().getBlockState(chestPos).getBlock();
+    return chestBlock != null && chestBlock instanceof ChestBlock;
   }
 
   @Override

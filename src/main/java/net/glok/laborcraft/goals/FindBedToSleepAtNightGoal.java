@@ -2,6 +2,8 @@ package net.glok.laborcraft.goals;
 
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
+import net.minecraft.block.BedBlock;
+import net.minecraft.block.Block;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 
@@ -47,7 +49,16 @@ public class FindBedToSleepAtNightGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    return (this.npc.currentState == StateEnum.SLEEPING);
+    return (
+      this.npc.currentState == StateEnum.SLEEPING &&
+      this.npc.isBedPositionValid() &&
+      isBedStillThere(this.npc.bedPosition)
+    );
+  }
+
+  public boolean isBedStillThere(BlockPos bedPos) {
+    Block bedBlock = this.npc.getEntityWorld().getBlockState(bedPos).getBlock();
+    return bedBlock != null && bedBlock instanceof BedBlock;
   }
 
   @Override

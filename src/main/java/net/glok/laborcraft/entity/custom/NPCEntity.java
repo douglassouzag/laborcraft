@@ -269,6 +269,15 @@ public abstract class NPCEntity
     if (this.firstWorkPosition != null) {
       this.secondWorkPosition = blockPos;
       this.workArea = new Box(this.firstWorkPosition, this.secondWorkPosition);
+      this.workArea =
+        new Box(
+          this.workArea.minX,
+          this.workArea.minY - 10,
+          this.workArea.minZ,
+          this.workArea.maxX,
+          this.workArea.maxY + 10,
+          this.workArea.maxZ
+        );
 
       sendMessageToPlayer(
         this.owner,
@@ -300,11 +309,15 @@ public abstract class NPCEntity
   }
 
   public boolean isBedPositionValid() {
-    return this.bedPosition != new BlockPos(0, 0, 0);
+    return (
+      this.bedPosition != new BlockPos(0, 0, 0) && this.bedPosition != null
+    );
   }
 
   public boolean isChestPositionValid() {
-    return this.chestPosition != new BlockPos(0, 0, 0);
+    return (
+      this.chestPosition != new BlockPos(0, 0, 0) && this.chestPosition != null
+    );
   }
 
   public void checkForOwnerCommands() {
