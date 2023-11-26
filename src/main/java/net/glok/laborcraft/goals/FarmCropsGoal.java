@@ -2,6 +2,7 @@ package net.glok.laborcraft.goals;
 
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
+import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
@@ -165,12 +166,14 @@ public class FarmCropsGoal extends Goal {
       (
         isThereAnyEmptyFarmland(this.npc.workArea) &&
         haveAnySeedsInInventory() &&
-        this.npc.isWorkAreaValid()
+        this.npc.isWorkAreaValid() &&
+        this.npc.currentState == StateEnum.WORKING
       ) ||
       (
         isThereAnyCropsMature(this.npc.workArea) &&
         !inventoryHelper.isInventoryFull(npc.getItems()) &&
-        this.npc.isWorkAreaValid()
+        this.npc.isWorkAreaValid() &&
+        this.npc.currentState == StateEnum.WORKING
       )
     );
   }
@@ -192,5 +195,10 @@ public class FarmCropsGoal extends Goal {
         }
       }
     }
+  }
+
+  @Override
+  public void stop() {
+    this.npc.currentState = StateEnum.IDLE;
   }
 }

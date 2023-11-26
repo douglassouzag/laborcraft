@@ -1,9 +1,11 @@
 package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.goals.FindBedToSleepAtNightGoal;
+import net.glok.laborcraft.goals.NPCWanderAroundGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
 import net.glok.laborcraft.identity.Enums.Gender;
 import net.glok.laborcraft.identity.NamesHelper;
+import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.glok.laborcraft.util.ImplementedInventory;
 import net.minecraft.block.BedBlock;
@@ -15,14 +17,12 @@ import net.minecraft.entity.ai.goal.AttackGoal;
 import net.minecraft.entity.ai.goal.LongDoorInteractGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.WanderAroundGoal;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -52,7 +52,7 @@ public abstract class NPCEntity
   //Player Setup
   private BlockPos firstWorkPosition;
   private BlockPos secondWorkPosition;
-  private PlayerEntity owner;
+  public PlayerEntity owner;
 
   //Persistent Data
   public String name;
@@ -60,6 +60,7 @@ public abstract class NPCEntity
   public Box workArea;
   public BlockPos bedPosition;
   public BlockPos chestPosition;
+  public StateEnum currentState;
 
   //Constants
   private final int handSwingDuration = 7;
@@ -99,7 +100,7 @@ public abstract class NPCEntity
     this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
     this.goalSelector.add(1, new AttackGoal(this));
     this.goalSelector.add(2, new FindBedToSleepAtNightGoal(this));
-    this.goalSelector.add(3, new WanderAroundGoal(this, 0.5f));
+    this.goalSelector.add(3, new NPCWanderAroundGoal(this, 0.5f));
     this.goalSelector.add(
         4,
         new LookAtEntityGoal(this, PlayerEntity.class, 6.0F)
@@ -113,7 +114,7 @@ public abstract class NPCEntity
       .add(EntityAttributes.GENERIC_MAX_HEALTH, 15)
       .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.5f)
       .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 0.5f)
-      .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 50.0);
+      .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 999);
   }
 
   @Override
@@ -161,14 +162,12 @@ public abstract class NPCEntity
 
     nbt.putLong("NPC.chestPosition", this.chestPosition.asLong());
 
-    if (this.workArea != null) {
-      nbt.putDouble("NPC.workArea.x1", this.workArea.minX);
-      nbt.putDouble("NPC.workArea.y1", this.workArea.minY);
-      nbt.putDouble("NPC.workArea.z1", this.workArea.minZ);
-      nbt.putDouble("NPC.workArea.x2", this.workArea.maxX);
-      nbt.putDouble("NPC.workArea.y2", this.workArea.maxY);
-      nbt.putDouble("NPC.workArea.z2", this.workArea.maxZ);
-    }
+    nbt.putDouble("NPC.workArea.x1", this.workArea.minX);
+    nbt.putDouble("NPC.workArea.y1", this.workArea.minY);
+    nbt.putDouble("NPC.workArea.z1", this.workArea.minZ);
+    nbt.putDouble("NPC.workArea.x2", this.workArea.maxX);
+    nbt.putDouble("NPC.workArea.y2", this.workArea.maxY);
+    nbt.putDouble("NPC.workArea.z2", this.workArea.maxZ);
 
     return super.writeNbt(nbt);
   }
@@ -234,6 +233,7 @@ public abstract class NPCEntity
   public void setOwner(PlayerEntity player) {
     if (this.owner != null) {
       this.owner = null;
+      this.currentState = StateEnum.IDLE;
     } else {
       this.owner = player;
     }
@@ -255,7 +255,7 @@ public abstract class NPCEntity
       this.secondWorkPosition = null;
 
       if (this.workArea != null) {
-        this.workArea = null;
+        this.workArea = new Box(0, 0, 0, 0, 0, 0);
         sendMessageToPlayer(
           this.owner,
           Text
@@ -375,6 +375,10 @@ public abstract class NPCEntity
 
     if (this.workArea == null) {
       this.workArea = new Box(0, 0, 0, 0, 0, 0);
+    }
+
+    if (this.currentState == null) {
+      this.currentState = StateEnum.IDLE;
     }
   }
 

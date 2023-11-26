@@ -3,12 +3,12 @@ package net.glok.laborcraft.goals;
 import java.util.List;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
+import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
@@ -78,7 +78,8 @@ public class CollectItemsGoal extends Goal {
   public boolean canStart() {
     return (
       isThereAnyItemsToCollect(npc.workArea) &&
-      !inventoryHelper.isInventoryFull(npc.getItems())
+      !inventoryHelper.isInventoryFull(npc.getItems()) &&
+      this.npc.currentState == StateEnum.WORKING
     );
   }
 
@@ -122,6 +123,11 @@ public class CollectItemsGoal extends Goal {
         itemEntity.discard();
       }
     }
+  }
+
+  @Override
+  public void stop() {
+    this.npc.currentState = StateEnum.IDLE;
   }
 
   @Override

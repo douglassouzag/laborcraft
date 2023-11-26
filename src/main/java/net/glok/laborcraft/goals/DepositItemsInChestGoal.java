@@ -2,6 +2,7 @@ package net.glok.laborcraft.goals;
 
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
+import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
@@ -80,11 +81,15 @@ public class DepositItemsInChestGoal extends Goal {
   public boolean canStart() {
     ChestBlockEntity chest = (ChestBlockEntity) this.npc.getWorld()
       .getBlockEntity(this.npc.chestPosition);
+
+    if (chest == null) return false;
+
     return (
       haveItemsToDeposit() &&
       this.npc.isChestPositionValid() &&
       inventoryHelper.haveSpaceInChestForItems(chest, itemsToDeposit) &&
-      !inventoryHelper.isChestFull(chest)
+      !inventoryHelper.isChestFull(chest) &&
+      inventoryHelper.isInventoryFull(this.npc.getItems())
     );
   }
 
@@ -95,5 +100,10 @@ public class DepositItemsInChestGoal extends Goal {
     if (isBesideChest()) {
       depositItemsInChest();
     }
+  }
+
+  @Override
+  public void stop() {
+    this.npc.currentState = StateEnum.IDLE;
   }
 }

@@ -1,6 +1,7 @@
 package net.glok.laborcraft.goals;
 
 import net.glok.laborcraft.entity.custom.NPCEntity;
+import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 
@@ -10,10 +11,6 @@ public class FindBedToSleepAtNightGoal extends Goal {
 
   public FindBedToSleepAtNightGoal(NPCEntity npc) {
     this.npc = npc;
-  }
-
-  private boolean isNightTime() {
-    return this.npc.getWorld().isNight();
   }
 
   private void goToBed(BlockPos bedPos) {
@@ -50,7 +47,7 @@ public class FindBedToSleepAtNightGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    return isNightTime() && this.npc.isBedPositionValid();
+    return (this.npc.currentState == StateEnum.SLEEPING);
   }
 
   @Override
@@ -67,5 +64,6 @@ public class FindBedToSleepAtNightGoal extends Goal {
   @Override
   public void stop() {
     wakeUp();
+    this.npc.currentState = StateEnum.IDLE;
   }
 }

@@ -4,6 +4,7 @@ import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.goals.CollectItemsGoal;
 import net.glok.laborcraft.goals.DepositItemsInChestGoal;
 import net.glok.laborcraft.goals.FarmCropsGoal;
+import net.glok.laborcraft.state.StateMachineGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Item;
@@ -27,7 +28,7 @@ public class FarmerNPCEntity extends WorkerNPCEntity {
   @Override
   protected void initGoals() {
     super.initGoals();
-
+    this.goalSelector.add(0, new StateMachineGoal(this));
     this.goalSelector.add(3, new FarmCropsGoal(this));
     this.goalSelector.add(
         3,
@@ -47,7 +48,7 @@ public class FarmerNPCEntity extends WorkerNPCEntity {
         )
       );
     this.goalSelector.add(
-        4,
+        8,
         new DepositItemsInChestGoal(
           this,
           new Item[] {
