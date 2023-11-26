@@ -42,7 +42,7 @@ public class NPCWanderAroundGoal extends Goal {
   }
 
   public boolean canStart() {
-    if (!(this.mob.currentState == StateEnum.WANDERING)) {
+    if (!(this.mob.currentState != StateEnum.SLEEPING)) {
       return false;
     }
 

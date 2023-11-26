@@ -9,6 +9,7 @@ import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 
@@ -104,6 +105,14 @@ public class DepositItemsInChestGoal extends Goal {
     goToChest();
 
     if (isBesideChest()) {
+      this.npc.getNavigation().stop();
+      this.npc.getLookControl()
+        .lookAt(
+          this.npc.chestPosition.getX(),
+          this.npc.chestPosition.getY(),
+          this.npc.chestPosition.getZ()
+        );
+      this.npc.swingHand(Hand.MAIN_HAND);
       depositItemsInChest();
     }
   }

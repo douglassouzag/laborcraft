@@ -412,6 +412,7 @@ public abstract class NPCEntity
       this.setCustomName(Text.of(this.name + " " + this.lastName));
     }
 
+    System.out.println(this.currentState);
     this.setCustomNameVisible(true);
   }
 }

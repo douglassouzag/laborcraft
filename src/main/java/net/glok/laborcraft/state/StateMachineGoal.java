@@ -23,7 +23,6 @@ public class StateMachineGoal extends Goal {
     FIGHTING,
     FLEEING,
     FOLLOWING,
-    WANDERING,
     TALKING,
     PRAYING,
   }
@@ -43,7 +42,6 @@ public class StateMachineGoal extends Goal {
           StateEnum.FIGHTING,
           StateEnum.FLEEING,
           StateEnum.FOLLOWING,
-          StateEnum.WANDERING,
           StateEnum.TALKING,
           StateEnum.PRAYING
         )
@@ -51,19 +49,19 @@ public class StateMachineGoal extends Goal {
     this.transitions.put(
         StateEnum.WORKING,
         EnumSet.of(
-          StateEnum.IDLE,
           StateEnum.SLEEPING,
           StateEnum.DEPOSITING,
-          StateEnum.FOLLOWING
+          StateEnum.FOLLOWING,
+          StateEnum.IDLE
         )
       );
     this.transitions.put(
         StateEnum.DEPOSITING,
         EnumSet.of(
-          StateEnum.IDLE,
           StateEnum.WORKING,
           StateEnum.FOLLOWING,
-          StateEnum.SLEEPING
+          StateEnum.SLEEPING,
+          StateEnum.IDLE
         )
       );
 
@@ -80,10 +78,7 @@ public class StateMachineGoal extends Goal {
         EnumSet.of(StateEnum.IDLE, StateEnum.FOLLOWING)
       );
     this.transitions.put(StateEnum.FOLLOWING, EnumSet.of(StateEnum.IDLE));
-    this.transitions.put(
-        StateEnum.WANDERING,
-        EnumSet.of(StateEnum.IDLE, StateEnum.FOLLOWING)
-      );
+
     this.transitions.put(
         StateEnum.TALKING,
         EnumSet.of(StateEnum.IDLE, StateEnum.FOLLOWING)
