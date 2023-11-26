@@ -107,6 +107,10 @@ public class FarmCropsGoal extends Goal {
 
   public BlockPos findNearestMatureCrop() {
     World world = npc.getEntityWorld();
+    BlockPos playerPos = npc.getBlockPos();
+    BlockPos closestPos = null;
+    double closestDistance = Double.MAX_VALUE;
+
     for (double x = npc.workArea.minX; x < npc.workArea.maxX; x++) {
       for (double y = npc.workArea.minY; y < npc.workArea.maxY; y++) {
         for (double z = npc.workArea.minZ; z < npc.workArea.maxZ; z++) {
@@ -117,13 +121,17 @@ public class FarmCropsGoal extends Goal {
           Block block = world.getBlockState(pos).getBlock();
           if (block == Blocks.WHEAT) {
             if (((CropBlock) block).isMature(world.getBlockState(pos))) {
-              return pos;
+              double distance = playerPos.getSquaredDistance(xPos, yPos, zPos);
+              if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPos = pos;
+              }
             }
           }
         }
       }
     }
-    return null;
+    return closestPos;
   }
 
   public void goTo(BlockPos pos) {

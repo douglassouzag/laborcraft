@@ -1,6 +1,5 @@
 package net.glok.laborcraft.state;
 
-import com.ibm.icu.util.BytesTrie.State;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +59,12 @@ public class StateMachineGoal extends Goal {
       );
     this.transitions.put(
         StateEnum.DEPOSITING,
-        EnumSet.of(StateEnum.IDLE, StateEnum.WORKING, StateEnum.FOLLOWING)
+        EnumSet.of(
+          StateEnum.IDLE,
+          StateEnum.WORKING,
+          StateEnum.FOLLOWING,
+          StateEnum.SLEEPING
+        )
       );
 
     this.transitions.put(
@@ -125,7 +129,7 @@ public class StateMachineGoal extends Goal {
     if (time >= 0 && time < 12000) {
       transitionTo(StateEnum.WORKING);
     } else if (time >= 12000 && time < 13000) {
-      transitionTo(StateEnum.PRAYING);
+      transitionTo(StateEnum.DEPOSITING);
     } else if (time >= 13000 && time < 23000 && this.npc.isBedPositionValid()) {
       transitionTo(StateEnum.SLEEPING);
     }

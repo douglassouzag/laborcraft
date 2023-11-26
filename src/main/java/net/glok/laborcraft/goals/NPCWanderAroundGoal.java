@@ -5,7 +5,6 @@ import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.Goal.Control;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 

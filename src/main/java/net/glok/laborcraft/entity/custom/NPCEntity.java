@@ -137,7 +137,7 @@ public abstract class NPCEntity
       this.chestPosition = BlockPos.fromLong(nbt.getLong("NPC.chestPosition"));
     }
 
-    if (nbt.contains("NPC.workArea")) {
+    if (nbt.contains("NPC.workArea.x1")) {
       this.workArea =
         new Box(
           nbt.getDouble("NPC.workArea.x1"),

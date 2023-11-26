@@ -89,7 +89,7 @@ public class DepositItemsInChestGoal extends Goal {
       this.npc.isChestPositionValid() &&
       inventoryHelper.haveSpaceInChestForItems(chest, itemsToDeposit) &&
       !inventoryHelper.isChestFull(chest) &&
-      inventoryHelper.isInventoryFull(this.npc.getItems())
+      this.npc.currentState == StateEnum.DEPOSITING
     );
   }
 
