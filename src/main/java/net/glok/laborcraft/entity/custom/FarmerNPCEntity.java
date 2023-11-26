@@ -62,6 +62,7 @@ public class FarmerNPCEntity extends WorkerNPCEntity {
             Items.CARROT,
             Items.BEETROOT_SEEDS,
             Items.COCOA_BEANS,
+            Items.BEETROOT,
           }
         )
       );
