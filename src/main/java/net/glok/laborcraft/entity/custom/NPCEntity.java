@@ -5,6 +5,7 @@ import net.glok.laborcraft.goals.NPCWanderAroundGoal;
 import net.glok.laborcraft.helpers.PlayerHelper;
 import net.glok.laborcraft.identity.Enums.Gender;
 import net.glok.laborcraft.identity.NamesHelper;
+import net.glok.laborcraft.state.StateMachineGoal;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.glok.laborcraft.util.BoxScreenHandler;
 import net.glok.laborcraft.util.ImplementedInventory;
@@ -50,8 +51,8 @@ public abstract class NPCEntity
   PlayerHelper playerHelper = new PlayerHelper();
   NamesHelper namesHelper = new NamesHelper();
   //Player Setup
-  private BlockPos firstWorkPosition;
-  private BlockPos secondWorkPosition;
+  public BlockPos firstWorkPosition;
+  public BlockPos secondWorkPosition;
   public PlayerEntity owner;
 
   //Persistent Data
@@ -97,6 +98,7 @@ public abstract class NPCEntity
 
   @Override
   protected void initGoals() {
+    this.goalSelector.add(0, new StateMachineGoal(this));
     this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
     this.goalSelector.add(1, new AttackGoal(this));
     this.goalSelector.add(2, new FindBedToSleepAtNightGoal(this));
@@ -305,7 +307,7 @@ public abstract class NPCEntity
   }
 
   public boolean isWorkAreaValid() {
-    return this.workArea != new Box(0, 0, 0, 0, 0, 0);
+    return this.workArea != new Box(0, 0, 0, 0, 0, 0) && this.workArea != null;
   }
 
   public boolean isBedPositionValid() {
@@ -411,8 +413,6 @@ public abstract class NPCEntity
     if (this.getCustomName() == null && this.name != null) {
       this.setCustomName(Text.of(this.name + " " + this.lastName));
     }
-
-    System.out.println(this.currentState);
     this.setCustomNameVisible(true);
   }
 }

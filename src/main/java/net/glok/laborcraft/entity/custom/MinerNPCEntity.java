@@ -1,6 +1,7 @@
 package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.Laborcraft;
+import net.glok.laborcraft.goals.SmartMineGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
@@ -17,5 +18,11 @@ public class MinerNPCEntity extends WorkerNPCEntity {
       world,
       new Identifier(Laborcraft.MOD_ID, "textures/entity/profession/miner.png")
     );
+  }
+
+  @Override
+  protected void initGoals() {
+    super.initGoals();
+    this.goalSelector.add(1, new SmartMineGoal(this));
   }
 }
