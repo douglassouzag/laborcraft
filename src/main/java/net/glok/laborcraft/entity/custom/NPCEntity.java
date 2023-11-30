@@ -248,7 +248,9 @@ public abstract class NPCEntity
   }
 
   public void sendMessageToPlayer(PlayerEntity player, String message) {
-    player.sendMessage(Text.of(getCustomName() + ": " + message));
+    player.sendMessage(
+      Text.of(this.name + " " + this.lastName + ": " + message)
+    );
   }
 
   public void setWorkPosition(BlockPos blockPos) {
@@ -386,10 +388,6 @@ public abstract class NPCEntity
 
     if (this.bedPosition == null) {
       this.bedPosition = new BlockPos(0, 0, 0);
-    }
-
-    if (this.workArea == null) {
-      this.workArea = new Box(0, 0, 0, 0, 0, 0);
     }
 
     if (this.currentState == null) {
