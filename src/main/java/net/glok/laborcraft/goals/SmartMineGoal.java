@@ -1,18 +1,19 @@
 package net.glok.laborcraft.goals;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.List;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.AreaHelper;
 import net.glok.laborcraft.helpers.BlockHelper;
+import net.glok.laborcraft.helpers.NavigationHelper;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
@@ -23,250 +24,159 @@ public class SmartMineGoal extends Goal {
   private enum MiningAction {
     MINE,
     FILL,
-    REMOVE,
-    PLACE,
+    FILL_HOLE,
+    BUILD_SUPPORT_BLOCK,
   }
 
-  private final Block[] gapBlocks = new Block[] {
-    Blocks.AIR,
-    Blocks.CAVE_AIR,
-    Blocks.WATER,
-    Blocks.LAVA,
-  };
+  private enum Directions {
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST,
+  }
+
+  private Directions currentDirection = Directions.NORTH;
 
   private final Block[] invalidBlocks = new Block[] {
     Blocks.BEDROCK,
     Blocks.SPAWNER,
   };
 
-  private LinkedHashMap<BlockPos, MiningAction> miningMap;
-  private ArrayList<BlockPos> liquidsToRemove = new ArrayList<BlockPos>();
+  private List<Map.Entry<BlockPos, MiningAction>> actions = new ArrayList<>();
 
   private final NPCEntity npc;
+
   private final AreaHelper areaHelper = new AreaHelper();
   private final BlockHelper blockHelper = new BlockHelper();
+  private final NavigationHelper navigationHelper = new NavigationHelper();
 
   private Box lastWorkArea;
 
+  private final Block[] gapBlocks = new Block[] {
+    Blocks.AIR,
+    Blocks.CAVE_AIR,
+    Blocks.WATER,
+    Blocks.LAVA,
+    Blocks.SEAGRASS,
+    Blocks.TALL_SEAGRASS,
+    Blocks.GRASS,
+    Blocks.KELP_PLANT,
+  };
+
   private Block supportBlock = Blocks.COBBLESTONE_SLAB;
+
+  private BlockPos currentStairPos;
 
   public SmartMineGoal(NPCEntity npc) {
     this.npc = npc;
   }
 
-  //StairCase
-  private boolean canPlaceBlock(BlockPos blockPos) {
-    Block blockToBeReplaced =
-      this.npc.getWorld().getBlockState(blockPos).getBlock();
-
-    return (
-      Arrays.asList(gapBlocks).contains(blockToBeReplaced) ||
-      blockToBeReplaced == Blocks.COBBLESTONE
-    );
-  }
-
-  private BlockPos calculateStairBlockPos(
-    BlockPos blockBelow,
-    Box workArea,
-    int tries
+  private List<Map.Entry<BlockPos, MiningAction>> setupMiningArea(
+    World world,
+    Box area
   ) {
-    int[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-    if (tries < 0 || tries >= directions.length) {
-      return null;
-    }
-
-    BlockPos newBlockPos = new BlockPos(
-      blockBelow.getX() + directions[tries][0],
-      blockBelow.getY(),
-      blockBelow.getZ() + directions[tries][1]
-    );
-
-    if (!areaHelper.isInside(workArea, newBlockPos)) return null;
-
-    if (
-      this.npc.getWorld().getBlockState(newBlockPos.up().up()).getBlock() ==
-      supportBlock
-    ) {
-      return null;
-    }
-
-    if (
-      !blockHelper.haveSolidBlockOnSide(this.npc.getWorld(), newBlockPos)
-    ) return null;
-
-    if (!canPlaceBlock(newBlockPos)) {
-      return null;
-    }
-
-    if (!areaHelper.isInEdge(workArea, newBlockPos)) {
-      return null;
-    }
-
-    return newBlockPos;
-  }
-
-  private BlockPos findNextStairCaseBlock(Box workArea) {
-    workArea =
-      new Box(
-        workArea.minX,
-        -59,
-        workArea.minZ,
-        workArea.maxX,
-        workArea.maxY,
-        workArea.maxZ
-      );
-
-    BlockPos nextStairCasePos = findLowestStairBlockPos(workArea);
-
-    if (nextStairCasePos != null) {
-      BlockPos blockBelow = nextStairCasePos.down();
-
-      for (int i = 0; i < 4; i++) {
-        BlockPos possibleNestBlock = calculateStairBlockPos(
-          blockBelow,
-          workArea,
-          i
-        );
-
-        if (possibleNestBlock != null) {
-          return possibleNestBlock;
-        }
-      }
-    } else {
-      nextStairCasePos = findFirstStairBlockPos(workArea);
-      if (nextStairCasePos != null) {
-        return nextStairCasePos;
-      }
-    }
-
-    return null;
-  }
-
-  private BlockPos findFirstStairBlockPos(Box workArea) {
-    World world = this.npc.getWorld();
-    double northEastCornerX = workArea.maxX;
-    double northEastCornerz = workArea.maxZ;
-
-    for (double y = workArea.maxY; y >= workArea.minY; y--) {
-      BlockPos pos = new BlockPos(
-        (int) northEastCornerX,
-        (int) y,
-        (int) northEastCornerz
-      );
-
-      if (blockHelper.haveSolidBlockOnSide(world, pos)) {
-        return pos;
-      }
-    }
-
-    return null;
-  }
-
-  public BlockPos findLowestStairBlockPos(Box workArea) {
-    World world = npc.getEntityWorld();
-    for (double y = workArea.minY; y <= workArea.maxY; y++) {
-      for (double x = workArea.minX; x <= workArea.maxX; x++) {
-        for (double z = workArea.minZ; z <= workArea.maxZ; z++) {
-          BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
-          Block block = world.getBlockState(pos).getBlock();
-          if (
-            block == supportBlock &&
-            blockHelper.haveSolidBlockOnSide(world, pos)
-          ) {
-            return pos;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  //
-
-  private MiningAction getMiningAction(Block block, boolean isInEdge) {
-    if (isInEdge) {
-      return MiningAction.FILL;
-    }
-    return MiningAction.MINE;
-  }
-
-  private void setMiningMap(World world, Box workArea) {
-    Box outerWorkArea = new Box(
-      workArea.minX - 1,
+    Box outerArea = new Box(
+      area.minX - 1,
       -59,
-      workArea.minZ - 1,
-      workArea.maxX + 1,
-      workArea.maxY - 10,
-      workArea.maxZ + 1
+      area.minZ - 1,
+      area.maxX + 1,
+      area.maxY - 10,
+      area.maxZ + 1
     );
 
-    for (int y = (int) outerWorkArea.maxY; y >= outerWorkArea.minY; y--) {
-      for (int x = (int) outerWorkArea.minX; x <= outerWorkArea.maxX; x++) {
-        for (int z = (int) outerWorkArea.minZ; z <= outerWorkArea.maxZ; z++) {
-          BlockPos pos = new BlockPos(x, y, z);
-          Block block = world.getBlockState(pos).getBlock();
-          Block upBlock = world.getBlockState(pos.up()).getBlock();
-          boolean isInEdge = areaHelper.isInEdge(outerWorkArea, pos);
-          boolean isLiquidToRemove = false;
+    Box innerArea = new Box(
+      area.minX,
+      -59,
+      area.minZ,
+      area.maxX,
+      area.maxY - 10,
+      area.maxZ
+    );
 
-          if (!isInEdge && blockHelper.isLiquidAndSource(world, pos)) {
-            liquidsToRemove.add(pos);
-            isLiquidToRemove = true;
-          }
+    for (int y = (int) outerArea.maxY; y >= outerArea.minY; y--) {
+      for (int x = (int) outerArea.minX; x <= outerArea.maxX; x++) {
+        for (int z = (int) outerArea.minZ; z <= outerArea.maxZ; z++) {
+          BlockPos blockPos = new BlockPos(x, y, z);
+          boolean isInEdge = areaHelper.isInEdge(outerArea, blockPos);
 
-          if (
-            !isInEdge &&
-            (block == Blocks.AIR || block == Blocks.CAVE_AIR) &&
-            (upBlock != Blocks.AIR || upBlock != Blocks.CAVE_AIR)
-          ) {
-            liquidsToRemove.add(pos);
-            isLiquidToRemove = true;
-          }
+          if (!isInEdge) continue;
+
+          Block block = world.getBlockState(blockPos).getBlock();
 
           if (Arrays.asList(invalidBlocks).contains(block)) continue;
 
-          if (isInEdge && !Arrays.asList(gapBlocks).contains(block)) continue;
+          if (Arrays.asList(gapBlocks).contains(block)) {
+            actions.add(
+              new AbstractMap.SimpleEntry<>(blockPos, MiningAction.FILL)
+            );
+          }
+          continue;
+        }
+      }
 
-          if (
-            !isInEdge &&
-            Arrays.asList(gapBlocks).contains(block) &&
-            !isLiquidToRemove
-          ) continue;
+      for (int x = (int) outerArea.minX; x <= outerArea.maxX; x++) {
+        for (int z = (int) outerArea.minZ; z <= outerArea.maxZ; z++) {
+          BlockPos blockPos = new BlockPos(x, y, z);
+          boolean isInEdge = areaHelper.isInEdge(outerArea, blockPos);
 
-          miningMap.put(pos, getMiningAction(block, isInEdge));
+          if (isInEdge) continue;
+
+          Block block = world.getBlockState(blockPos).getBlock();
+          if (Arrays.asList(invalidBlocks).contains(block)) continue;
+
+          actions.add(
+            new AbstractMap.SimpleEntry<>(blockPos, MiningAction.MINE)
+          );
+
+          if (currentStairPos == null) {
+            currentStairPos = blockPos;
+          }
+
+          if (blockPos.equals(currentStairPos)) {
+            actions.add(
+              new AbstractMap.SimpleEntry<>(
+                currentStairPos,
+                MiningAction.BUILD_SUPPORT_BLOCK
+              )
+            );
+
+            if (currentDirection == Directions.NORTH) {
+              currentStairPos = currentStairPos.east().down();
+            } else if (currentDirection == Directions.EAST) {
+              currentStairPos = currentStairPos.south().down();
+            } else if (currentDirection == Directions.SOUTH) {
+              currentStairPos = currentStairPos.west().down();
+            } else if (currentDirection == Directions.WEST) {
+              currentStairPos = currentStairPos.north().down();
+            }
+
+            if (areaHelper.isCornerBlock(innerArea, currentStairPos)) {
+              currentDirection =
+                currentDirection == Directions.NORTH
+                  ? Directions.EAST
+                  : currentDirection == Directions.EAST
+                    ? Directions.SOUTH
+                    : currentDirection == Directions.SOUTH
+                      ? Directions.WEST
+                      : Directions.NORTH;
+            }
+          }
+
+          continue;
         }
       }
     }
+    return actions;
   }
 
-  private void removeFromMiningMap(BlockPos pos) {
-    miningMap.remove(pos);
-  }
+  private boolean isBlockAboveHole(World world, BlockPos blockPos) {
+    BlockPos blockPosDown = blockPos.down();
+    Block block = world.getBlockState(blockPosDown).getBlock();
 
-  private BlockPos getNextCoords() {
-    if (!miningMap.isEmpty()) {
-      Map.Entry<BlockPos, MiningAction> entry = miningMap
-        .entrySet()
-        .iterator()
-        .next();
-      BlockPos coord = entry.getKey();
-      return coord;
-    }
-    return null;
-  }
-
-  private BlockPos getNextLiquidToRemove() {
-    if (liquidsToRemove.isEmpty()) return null;
-    return liquidsToRemove.get(0);
-  }
-
-  private void removeLiquidToRemove(BlockPos pos) {
-    liquidsToRemove.remove(pos);
+    return (Arrays.asList(gapBlocks).contains(block));
   }
 
   private void putBlock(Block block, BlockPos pos) {
-    this.npc.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
-    this.npc.swingHand(Hand.MAIN_HAND);
     World world = npc.getEntityWorld();
     if (block instanceof SlabBlock) {
       world.setBlockState(
@@ -285,50 +195,50 @@ public class SmartMineGoal extends Goal {
     );
   }
 
+  private int currentActionIndex = 0;
+
   @Override
   public void tick() {
-    if (this.miningMap == null || this.lastWorkArea != this.npc.workArea) {
-      this.miningMap = new LinkedHashMap<BlockPos, MiningAction>();
-      setMiningMap(this.npc.getWorld(), this.npc.workArea);
+    if (this.actions == null || this.lastWorkArea != this.npc.workArea) {
+      this.actions = setupMiningArea(this.npc.getWorld(), this.npc.workArea);
       this.lastWorkArea = this.npc.workArea;
+      this.currentActionIndex = 0;
       return;
     }
 
-    BlockPos nextStairCasePos = findNextStairCaseBlock(this.npc.workArea);
+    areaHelper.showAreaVisually(this.npc.getWorld(), this.npc.workArea);
 
-    if (nextStairCasePos != null) {
-      putBlock(supportBlock, nextStairCasePos);
+    if (currentActionIndex >= actions.size()) return;
+
+    Map.Entry<BlockPos, MiningAction> nextActionEntry = actions.get(
+      currentActionIndex
+    );
+    BlockPos nextCoords = nextActionEntry.getKey();
+    MiningAction nextAction = nextActionEntry.getValue();
+
+    navigationHelper.navigateTo(npc, nextCoords);
+
+    if (isBlockAboveHole(this.npc.getWorld(), nextCoords)) {
+      putBlock(Blocks.COBBLESTONE, nextCoords.down());
 
       return;
     }
-
-    BlockPos nextCoords = getNextCoords();
-    if (nextCoords == null) return;
-
-    int currentYLevel = nextCoords.getY();
-
-    BlockPos liquidToRemove = getNextLiquidToRemove();
-    if (liquidToRemove != null) {
-      int liquidToRemoveYLevel = liquidToRemove.getY();
-      if (
-        liquidToRemoveYLevel <= currentYLevel &&
-        currentYLevel - liquidToRemoveYLevel <= 1
-      ) {
-        putBlock(Blocks.COBBLESTONE, liquidToRemove);
-        removeLiquidToRemove(liquidToRemove);
-        return;
-      }
-    }
-
-    MiningAction nextAction = this.miningMap.get(nextCoords);
 
     if (nextAction == MiningAction.FILL) {
       putBlock(Blocks.COBBLESTONE, nextCoords);
     }
-    if (nextAction == MiningAction.MINE) {
-      blockHelper.breakBlock(this.npc.getWorld(), nextCoords, false);
-      removeFromMiningMap(nextCoords);
+    if (nextAction == MiningAction.BUILD_SUPPORT_BLOCK) {
+      putBlock(supportBlock, nextCoords);
     }
-    removeFromMiningMap(nextCoords);
+
+    if (nextAction == MiningAction.FILL_HOLE) {
+      putBlock(Blocks.COBBLESTONE, nextCoords);
+    }
+
+    if (nextAction == MiningAction.MINE) {
+      blockHelper.breakBlock(npc.getWorld(), nextCoords, false);
+    }
+
+    currentActionIndex++;
   }
 }
