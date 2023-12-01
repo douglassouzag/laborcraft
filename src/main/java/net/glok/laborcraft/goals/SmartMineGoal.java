@@ -1,18 +1,14 @@
 package net.glok.laborcraft.goals;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import net.glok.laborcraft.entity.custom.NPCEntity;
+import net.glok.laborcraft.entity.custom.MinerNPCEntity;
 import net.glok.laborcraft.helpers.AreaHelper;
 import net.glok.laborcraft.helpers.BlockHelper;
 import net.glok.laborcraft.helpers.NavigationHelper;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.enums.SlabType;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -21,10 +17,9 @@ import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo.Map;
 
 public class SmartMineGoal extends Goal {
 
-  private enum MiningAction {
+  public enum MiningAction {
     MINE,
     FILL,
-    FILL_HOLE,
     BUILD_SUPPORT_BLOCK,
   }
 
@@ -42,15 +37,11 @@ public class SmartMineGoal extends Goal {
     Blocks.SPAWNER,
   };
 
-  private List<Map.Entry<BlockPos, MiningAction>> actions = new ArrayList<>();
-
-  private final NPCEntity npc;
+  private final MinerNPCEntity npc;
 
   private final AreaHelper areaHelper = new AreaHelper();
   private final BlockHelper blockHelper = new BlockHelper();
   private final NavigationHelper navigationHelper = new NavigationHelper();
-
-  private Box lastWorkArea;
 
   private final Block[] gapBlocks = new Block[] {
     Blocks.AIR,
@@ -64,17 +55,15 @@ public class SmartMineGoal extends Goal {
   };
 
   private Block supportBlock = Blocks.COBBLESTONE_SLAB;
+  private Block fillHoleBlock = Blocks.COBBLESTONE;
 
   private BlockPos currentStairPos;
 
-  public SmartMineGoal(NPCEntity npc) {
+  public SmartMineGoal(MinerNPCEntity npc) {
     this.npc = npc;
   }
 
-  private List<Map.Entry<BlockPos, MiningAction>> setupMiningArea(
-    World world,
-    Box area
-  ) {
+  private void setupMiningArea(World world, Box area) {
     Box outerArea = new Box(
       area.minX - 1,
       -59,
@@ -106,9 +95,9 @@ public class SmartMineGoal extends Goal {
           if (Arrays.asList(invalidBlocks).contains(block)) continue;
 
           if (Arrays.asList(gapBlocks).contains(block)) {
-            actions.add(
-              new AbstractMap.SimpleEntry<>(blockPos, MiningAction.FILL)
-            );
+            this.npc.actions.add(
+                new AbstractMap.SimpleEntry<>(blockPos, MiningAction.FILL)
+              );
           }
           continue;
         }
@@ -124,21 +113,21 @@ public class SmartMineGoal extends Goal {
           Block block = world.getBlockState(blockPos).getBlock();
           if (Arrays.asList(invalidBlocks).contains(block)) continue;
 
-          actions.add(
-            new AbstractMap.SimpleEntry<>(blockPos, MiningAction.MINE)
-          );
+          this.npc.actions.add(
+              new AbstractMap.SimpleEntry<>(blockPos, MiningAction.MINE)
+            );
 
           if (currentStairPos == null) {
             currentStairPos = blockPos;
           }
 
           if (blockPos.equals(currentStairPos)) {
-            actions.add(
-              new AbstractMap.SimpleEntry<>(
-                currentStairPos,
-                MiningAction.BUILD_SUPPORT_BLOCK
-              )
-            );
+            this.npc.actions.add(
+                new AbstractMap.SimpleEntry<>(
+                  currentStairPos,
+                  MiningAction.BUILD_SUPPORT_BLOCK
+                )
+              );
 
             if (currentDirection == Directions.NORTH) {
               currentStairPos = currentStairPos.east().down();
@@ -166,7 +155,6 @@ public class SmartMineGoal extends Goal {
         }
       }
     }
-    return actions;
   }
 
   private boolean isBlockAboveHole(World world, BlockPos blockPos) {
@@ -176,18 +164,6 @@ public class SmartMineGoal extends Goal {
     return (Arrays.asList(gapBlocks).contains(block));
   }
 
-  private void putBlock(Block block, BlockPos pos) {
-    World world = npc.getEntityWorld();
-    if (block instanceof SlabBlock) {
-      world.setBlockState(
-        pos,
-        block.getDefaultState().with(SlabBlock.TYPE, SlabType.TOP)
-      );
-    } else {
-      world.setBlockState(pos, block.getDefaultState());
-    }
-  }
-
   @Override
   public boolean canStart() {
     return (
@@ -195,50 +171,57 @@ public class SmartMineGoal extends Goal {
     );
   }
 
-  private int currentActionIndex = 0;
-
   @Override
   public void tick() {
-    if (this.actions == null || this.lastWorkArea != this.npc.workArea) {
-      this.actions = setupMiningArea(this.npc.getWorld(), this.npc.workArea);
-      this.lastWorkArea = this.npc.workArea;
-      this.currentActionIndex = 0;
+    if (this.npc.lastWorkArea == null) {
+      this.npc.lastWorkArea = this.npc.workArea;
+    }
+
+    if (this.npc.actions.isEmpty()) {
+      setupMiningArea(this.npc.getWorld(), this.npc.workArea);
       return;
     }
 
-    areaHelper.showAreaVisually(this.npc.getWorld(), this.npc.workArea);
-
-    if (currentActionIndex >= actions.size()) return;
-
-    Map.Entry<BlockPos, MiningAction> nextActionEntry = actions.get(
-      currentActionIndex
-    );
+    Map.Entry<BlockPos, MiningAction> nextActionEntry = this.npc.actions.get(0);
     BlockPos nextCoords = nextActionEntry.getKey();
     MiningAction nextAction = nextActionEntry.getValue();
 
     navigationHelper.navigateTo(npc, nextCoords);
 
-    if (isBlockAboveHole(this.npc.getWorld(), nextCoords)) {
-      putBlock(Blocks.COBBLESTONE, nextCoords.down());
+    if (navigationHelper.isNearEnough(npc, nextCoords, 8f)) {
+      if (nextAction == MiningAction.FILL) {
+        blockHelper.putBlockWithEntity(
+          npc,
+          nextCoords,
+          fillHoleBlock.getDefaultState()
+        );
+      }
+      if (nextAction == MiningAction.BUILD_SUPPORT_BLOCK) {
+        blockHelper.putBlockWithEntity(
+          npc,
+          nextCoords,
+          supportBlock.getDefaultState()
+        );
+      }
 
-      return;
-    }
+      if (nextAction == MiningAction.MINE) {
+        if (isBlockAboveHole(this.npc.getWorld(), nextCoords)) {
+          blockHelper.putBlockWithEntity(
+            npc,
+            nextCoords.down(),
+            fillHoleBlock.getDefaultState()
+          );
+        }
 
-    if (nextAction == MiningAction.FILL) {
-      putBlock(Blocks.COBBLESTONE, nextCoords);
-    }
-    if (nextAction == MiningAction.BUILD_SUPPORT_BLOCK) {
-      putBlock(supportBlock, nextCoords);
-    }
+        // blockHelper.breakBlockProgressivelyWithEntity(npc, nextCoords, true);
+        blockHelper.breakBlock(npc.getWorld(), nextCoords, false);
+      }
 
-    if (nextAction == MiningAction.FILL_HOLE) {
-      putBlock(Blocks.COBBLESTONE, nextCoords);
-    }
+      this.npc.actions.remove(0);
 
-    if (nextAction == MiningAction.MINE) {
-      blockHelper.breakBlock(npc.getWorld(), nextCoords, false);
+      if (this.npc.actions.isEmpty()) {
+        this.npc.workArea = null;
+      }
     }
-
-    currentActionIndex++;
   }
 }

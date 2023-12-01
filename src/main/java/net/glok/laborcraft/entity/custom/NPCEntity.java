@@ -164,12 +164,14 @@ public abstract class NPCEntity
 
     nbt.putLong("NPC.chestPosition", this.chestPosition.asLong());
 
-    nbt.putDouble("NPC.workArea.x1", this.workArea.minX);
-    nbt.putDouble("NPC.workArea.y1", this.workArea.minY);
-    nbt.putDouble("NPC.workArea.z1", this.workArea.minZ);
-    nbt.putDouble("NPC.workArea.x2", this.workArea.maxX);
-    nbt.putDouble("NPC.workArea.y2", this.workArea.maxY);
-    nbt.putDouble("NPC.workArea.z2", this.workArea.maxZ);
+    if (this.workArea != null) {
+      nbt.putDouble("NPC.workArea.x1", this.workArea.minX);
+      nbt.putDouble("NPC.workArea.y1", this.workArea.minY);
+      nbt.putDouble("NPC.workArea.z1", this.workArea.minZ);
+      nbt.putDouble("NPC.workArea.x2", this.workArea.maxX);
+      nbt.putDouble("NPC.workArea.y2", this.workArea.maxY);
+      nbt.putDouble("NPC.workArea.z2", this.workArea.maxZ);
+    }
 
     return super.writeNbt(nbt);
   }

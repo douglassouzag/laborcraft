@@ -76,6 +76,8 @@ public class CollectItemsGoal extends Goal {
 
   @Override
   public boolean canStart() {
+    if (!this.npc.isWorkAreaValid()) return false;
+
     return (
       isThereAnyItemsToCollect(npc.workArea) &&
       !inventoryHelper.isInventoryFull(npc.getItems()) &&
@@ -93,7 +95,7 @@ public class CollectItemsGoal extends Goal {
     npc
       .getLookControl()
       .lookAt(itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
-    npc.swingHand(Hand.MAIN_HAND);
+    npc.swingHand(Hand.OFF_HAND);
 
     if (itemEntity.isAlive()) {
       ItemStack itemStack = itemEntity.getStack();

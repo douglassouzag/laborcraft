@@ -4,6 +4,8 @@ import java.util.Arrays;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.block.enums.SlabType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
@@ -17,7 +19,13 @@ public class BlockHelper {
   public static Block[] liquidBlocks = { Blocks.WATER, Blocks.LAVA };
 
   public void putBlock(World world, BlockPos pos, BlockState state) {
-    world.setBlockState(pos, state);
+    Block block = world.getBlockState(pos).getBlock();
+
+    if (block instanceof SlabBlock) {
+      world.setBlockState(pos, state.with(SlabBlock.TYPE, SlabType.TOP));
+    } else {
+      world.setBlockState(pos, state);
+    }
   }
 
   public void putBlockWithEntity(

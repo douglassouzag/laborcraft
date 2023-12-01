@@ -80,6 +80,8 @@ public class DepositItemsInChestGoal extends Goal {
 
   @Override
   public boolean canStart() {
+    if (!this.npc.isChestPositionValid()) return false;
+
     ChestBlockEntity chest = (ChestBlockEntity) this.npc.getWorld()
       .getBlockEntity(this.npc.chestPosition);
 

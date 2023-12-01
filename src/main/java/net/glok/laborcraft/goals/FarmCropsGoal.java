@@ -212,18 +212,15 @@ public class FarmCropsGoal extends Goal {
 
   @Override
   public boolean canStart() {
+    if (!this.npc.isWorkAreaValid()) return false;
+    if (this.npc.currentState != StateEnum.WORKING) return false;
     return (
       (
-        isThereAnyEmptyFarmland(this.npc.workArea) &&
-        haveAnySeedsInInventory() &&
-        this.npc.isWorkAreaValid() &&
-        this.npc.currentState == StateEnum.WORKING
+        isThereAnyEmptyFarmland(this.npc.workArea) && haveAnySeedsInInventory()
       ) ||
       (
         isThereAnyCropsMature(this.npc.workArea) &&
-        !inventoryHelper.isInventoryFull(npc.getItems()) &&
-        this.npc.isWorkAreaValid() &&
-        this.npc.currentState == StateEnum.WORKING
+        !inventoryHelper.isInventoryFull(npc.getItems())
       )
     );
   }
