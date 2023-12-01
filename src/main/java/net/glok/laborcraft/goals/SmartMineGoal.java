@@ -52,6 +52,7 @@ public class SmartMineGoal extends Goal {
     Blocks.TALL_SEAGRASS,
     Blocks.GRASS,
     Blocks.KELP_PLANT,
+    Blocks.AMETHYST_CLUSTER,
   };
 
   private Block supportBlock = Blocks.COBBLESTONE_SLAB;

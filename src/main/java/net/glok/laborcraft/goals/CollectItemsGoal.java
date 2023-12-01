@@ -1,8 +1,10 @@
 package net.glok.laborcraft.goals;
 
 import java.util.List;
+import net.glok.laborcraft.entity.custom.MinerNPCEntity;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.helpers.InventoryHelper;
+import net.glok.laborcraft.helpers.NavigationHelper;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -17,6 +19,7 @@ public class CollectItemsGoal extends Goal {
   private final NPCEntity npc;
   private final Item[] itemsToCollect;
   private final InventoryHelper inventoryHelper = new InventoryHelper();
+  private final NavigationHelper navigationHelper = new NavigationHelper();
 
   public CollectItemsGoal(NPCEntity npc, Item[] itemsToCollect) {
     this.npc = npc;
@@ -78,8 +81,26 @@ public class CollectItemsGoal extends Goal {
   public boolean canStart() {
     if (!this.npc.isWorkAreaValid()) return false;
 
+    boolean itemsToCollect;
+
+    if (this.npc instanceof MinerNPCEntity) {
+      itemsToCollect =
+        isThereAnyItemsToCollect(
+          new Box(
+            this.npc.workArea.minX - 1,
+            -60,
+            this.npc.workArea.minZ - 1,
+            this.npc.workArea.maxX + 1,
+            this.npc.workArea.maxY,
+            this.npc.workArea.maxZ + 1
+          )
+        );
+    } else {
+      itemsToCollect = isThereAnyItemsToCollect(npc.workArea);
+    }
+
     return (
-      isThereAnyItemsToCollect(npc.workArea) &&
+      itemsToCollect &&
       !inventoryHelper.isInventoryFull(npc.getItems()) &&
       this.npc.currentState == StateEnum.WORKING
     );
@@ -134,7 +155,23 @@ public class CollectItemsGoal extends Goal {
 
   @Override
   public void tick() {
-    ItemEntity nearestItem = findNearesItemToCollect(npc.workArea);
+    ItemEntity nearestItem;
+
+    if (this.npc instanceof MinerNPCEntity) {
+      nearestItem =
+        findNearesItemToCollect(
+          new Box(
+            this.npc.workArea.minX - 1,
+            -60,
+            this.npc.workArea.minZ - 1,
+            this.npc.workArea.maxX + 1,
+            this.npc.workArea.maxY,
+            this.npc.workArea.maxZ + 1
+          )
+        );
+    } else {
+      nearestItem = findNearesItemToCollect(npc.workArea);
+    }
 
     if (nearestItem == null) {
       return;
@@ -143,7 +180,7 @@ public class CollectItemsGoal extends Goal {
     goToItem(nearestItem);
 
     if (
-      isNearEnough(nearestItem) &&
+      navigationHelper.isNearEnough(this.npc, nearestItem.getBlockPos(), 20f) &&
       !inventoryHelper.isInventoryFull(npc.getItems())
     ) {
       collectItemAndPutInInventory(nearestItem);

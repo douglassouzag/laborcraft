@@ -84,10 +84,13 @@ public class MinerNPCEntity extends WorkerNPCEntity {
             Items.GRAVEL,
             Items.FLINT,
             Items.SANDSTONE,
+            Items.GRANITE,
+            Items.DIORITE,
+            Items.ANDESITE,
           }
         )
       );
-    this.goalSelector.add(4, new SmartMineGoal(this));
+    this.goalSelector.add(3, new SmartMineGoal(this));
 
     this.goalSelector.add(
         8,
@@ -111,6 +114,9 @@ public class MinerNPCEntity extends WorkerNPCEntity {
             Items.GRAVEL,
             Items.FLINT,
             Items.SANDSTONE,
+            Items.GRANITE,
+            Items.DIORITE,
+            Items.ANDESITE,
           }
         )
       );
