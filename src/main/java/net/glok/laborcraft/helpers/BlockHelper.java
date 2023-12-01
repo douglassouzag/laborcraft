@@ -18,24 +18,25 @@ public class BlockHelper {
 
   public static Block[] liquidBlocks = { Blocks.WATER, Blocks.LAVA };
 
-  public void putBlock(World world, BlockPos pos, BlockState state) {
-    Block block = world.getBlockState(pos).getBlock();
-
+  public void putBlock(World world, BlockPos pos, Block block) {
     if (block instanceof SlabBlock) {
-      world.setBlockState(pos, state.with(SlabBlock.TYPE, SlabType.TOP));
+      world.setBlockState(
+        pos,
+        block.getDefaultState().with(SlabBlock.TYPE, SlabType.TOP)
+      );
     } else {
-      world.setBlockState(pos, state);
+      world.setBlockState(pos, block.getDefaultState());
     }
   }
 
   public void putBlockWithEntity(
     LivingEntity entity,
     BlockPos pos,
-    BlockState state
+    Block block
   ) {
     World world = entity.getEntityWorld();
     entity.swingHand(Hand.MAIN_HAND);
-    this.putBlock(world, pos, state);
+    this.putBlock(world, pos, block);
   }
 
   public void breakBlock(World world, BlockPos pos, boolean dropItems) {

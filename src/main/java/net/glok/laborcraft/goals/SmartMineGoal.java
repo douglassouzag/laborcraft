@@ -188,33 +188,20 @@ public class SmartMineGoal extends Goal {
 
     navigationHelper.navigateTo(npc, nextCoords);
 
-    if (navigationHelper.isNearEnough(npc, nextCoords, 8f)) {
+    if (navigationHelper.isNearEnough(npc, nextCoords, 10f)) {
       if (nextAction == MiningAction.FILL) {
-        blockHelper.putBlockWithEntity(
-          npc,
-          nextCoords,
-          fillHoleBlock.getDefaultState()
-        );
+        blockHelper.putBlockWithEntity(npc, nextCoords, fillHoleBlock);
       }
       if (nextAction == MiningAction.BUILD_SUPPORT_BLOCK) {
-        blockHelper.putBlockWithEntity(
-          npc,
-          nextCoords,
-          supportBlock.getDefaultState()
-        );
+        blockHelper.putBlockWithEntity(npc, nextCoords, supportBlock);
       }
 
       if (nextAction == MiningAction.MINE) {
         if (isBlockAboveHole(this.npc.getWorld(), nextCoords)) {
-          blockHelper.putBlockWithEntity(
-            npc,
-            nextCoords.down(),
-            fillHoleBlock.getDefaultState()
-          );
+          blockHelper.putBlockWithEntity(npc, nextCoords.down(), fillHoleBlock);
         }
 
-        // blockHelper.breakBlockProgressivelyWithEntity(npc, nextCoords, true);
-        blockHelper.breakBlock(npc.getWorld(), nextCoords, false);
+        blockHelper.breakBlockProgressivelyWithEntity(npc, nextCoords, true);
       }
 
       this.npc.actions.remove(0);
