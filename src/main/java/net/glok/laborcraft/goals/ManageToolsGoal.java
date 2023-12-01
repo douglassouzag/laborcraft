@@ -54,8 +54,6 @@ public class ManageToolsGoal extends Goal {
             bestTool = stack;
             bestScore = score;
           }
-
-          break;
         }
       }
     }
