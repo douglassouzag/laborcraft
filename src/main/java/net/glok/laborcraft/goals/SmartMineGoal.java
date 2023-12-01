@@ -167,7 +167,9 @@ public class SmartMineGoal extends Goal {
   @Override
   public boolean canStart() {
     return (
-      this.npc.isWorkAreaValid() && this.npc.currentState == StateEnum.WORKING
+      this.npc.isWorkAreaValid() &&
+      this.npc.currentState == StateEnum.WORKING &&
+      this.npc.haveWorkTool
     );
   }
 
@@ -188,12 +190,14 @@ public class SmartMineGoal extends Goal {
 
     navigationHelper.navigateTo(npc, nextCoords);
 
-    if (navigationHelper.isNearEnough(npc, nextCoords, 10f)) {
+    if (navigationHelper.isNearEnough(npc, nextCoords, 20f)) {
       if (nextAction == MiningAction.FILL) {
         blockHelper.putBlockWithEntity(npc, nextCoords, fillHoleBlock);
+        this.npc.actions.remove(0);
       }
       if (nextAction == MiningAction.BUILD_SUPPORT_BLOCK) {
         blockHelper.putBlockWithEntity(npc, nextCoords, supportBlock);
+        this.npc.actions.remove(0);
       }
 
       if (nextAction == MiningAction.MINE) {
@@ -202,9 +206,13 @@ public class SmartMineGoal extends Goal {
         }
 
         blockHelper.breakBlockProgressivelyWithEntity(npc, nextCoords, true);
-      }
+        Block currentBlock =
+          this.npc.getWorld().getBlockState(nextCoords).getBlock();
 
-      this.npc.actions.remove(0);
+        if (currentBlock == Blocks.AIR || currentBlock == Blocks.CAVE_AIR) {
+          this.npc.actions.remove(0);
+        }
+      }
 
       if (this.npc.actions.isEmpty()) {
         this.npc.workArea = null;

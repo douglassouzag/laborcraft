@@ -190,4 +190,20 @@ public class InventoryHelper {
     }
     return false;
   }
+
+  public boolean hasItems(DefaultedList<ItemStack> inventory, Item[] items) {
+    for (Item item : items) {
+      boolean found = false;
+      for (ItemStack stack : inventory) {
+        if (stack.getItem().equals(item)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

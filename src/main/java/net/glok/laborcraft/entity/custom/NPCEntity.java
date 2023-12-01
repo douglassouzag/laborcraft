@@ -63,6 +63,9 @@ public abstract class NPCEntity
   public BlockPos chestPosition;
   public StateEnum currentState;
 
+  public Block blockToBreak;
+  public boolean haveWorkTool = true;
+
   //Constants
   private final int handSwingDuration = 7;
   public final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(

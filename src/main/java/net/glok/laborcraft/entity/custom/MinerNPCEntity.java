@@ -5,10 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.glok.laborcraft.Laborcraft;
+import net.glok.laborcraft.goals.CollectItemsGoal;
+import net.glok.laborcraft.goals.DepositItemsInChestGoal;
+import net.glok.laborcraft.goals.ManageToolsGoal;
 import net.glok.laborcraft.goals.SmartMineGoal;
 import net.glok.laborcraft.goals.SmartMineGoal.MiningAction;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
@@ -36,7 +41,79 @@ public class MinerNPCEntity extends WorkerNPCEntity {
   @Override
   protected void initGoals() {
     super.initGoals();
-    this.goalSelector.add(1, new SmartMineGoal(this));
+    this.goalSelector.add(
+        0,
+        new ManageToolsGoal(
+          this,
+          new Item[] {
+            Items.WOODEN_PICKAXE,
+            Items.STONE_PICKAXE,
+            Items.IRON_PICKAXE,
+            Items.GOLDEN_PICKAXE,
+            Items.DIAMOND_PICKAXE,
+            Items.NETHERITE_PICKAXE,
+            Items.WOODEN_SHOVEL,
+            Items.STONE_SHOVEL,
+            Items.IRON_SHOVEL,
+            Items.GOLDEN_SHOVEL,
+            Items.DIAMOND_SHOVEL,
+            Items.NETHERITE_SHOVEL,
+          },
+          true
+        )
+      );
+    this.goalSelector.add(
+        3,
+        new CollectItemsGoal(
+          this,
+          new Item[] {
+            Items.COAL,
+            Items.RAW_IRON,
+            Items.RAW_GOLD,
+            Items.RAW_COPPER,
+            Items.REDSTONE,
+            Items.LAPIS_LAZULI,
+            Items.EMERALD,
+            Items.DIAMOND,
+            Items.COBBLESTONE,
+            Items.DEEPSLATE,
+            Items.DIRT,
+            Items.SAND,
+            Items.CLAY,
+            Items.TUFF,
+            Items.GRAVEL,
+            Items.FLINT,
+            Items.SANDSTONE,
+          }
+        )
+      );
+    this.goalSelector.add(4, new SmartMineGoal(this));
+
+    this.goalSelector.add(
+        8,
+        new DepositItemsInChestGoal(
+          this,
+          new Item[] {
+            Items.COAL,
+            Items.RAW_IRON,
+            Items.RAW_GOLD,
+            Items.RAW_COPPER,
+            Items.REDSTONE,
+            Items.LAPIS_LAZULI,
+            Items.EMERALD,
+            Items.DIAMOND,
+            Items.COBBLESTONE,
+            Items.DEEPSLATE,
+            Items.DIRT,
+            Items.SAND,
+            Items.CLAY,
+            Items.TUFF,
+            Items.GRAVEL,
+            Items.FLINT,
+            Items.SANDSTONE,
+          }
+        )
+      );
   }
 
   public NbtCompound saveActionsToNBT(

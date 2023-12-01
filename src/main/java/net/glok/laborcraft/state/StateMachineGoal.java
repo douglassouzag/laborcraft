@@ -121,7 +121,12 @@ public class StateMachineGoal extends Goal {
     if (this.npc.owner != null) {
       transitionTo(StateEnum.FOLLOWING);
     }
-    if (time >= 0 && time < 12000) {
+    if (
+      time >= 0 &&
+      time < 12000 &&
+      this.npc.isWorkAreaValid() &&
+      this.npc.haveWorkTool
+    ) {
       transitionTo(StateEnum.WORKING);
     } else if (time >= 12000 && time < 13000) {
       transitionTo(StateEnum.DEPOSITING);

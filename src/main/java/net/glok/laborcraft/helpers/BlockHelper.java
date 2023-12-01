@@ -1,6 +1,7 @@
 package net.glok.laborcraft.helpers;
 
 import java.util.Arrays;
+import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -75,19 +76,22 @@ public class BlockHelper {
     if (lastBreakProgress >= 10) {
       this.lastBreakProgress = 0;
       this.breakBlock(world, pos, dropItems);
+      tool.damage(1, world.getRandom(), null);
     } else {
       this.lastBreakProgress = breakingProgress;
     }
   }
 
   public void breakBlockProgressivelyWithEntity(
-    LivingEntity entity,
+    NPCEntity entity,
     BlockPos pos,
     boolean dropItems
   ) {
     World world = entity.getEntityWorld();
     ItemStack tool = entity.getMainHandStack();
     entity.swingHand(Hand.MAIN_HAND);
+    Block block = world.getBlockState(pos).getBlock();
+    entity.blockToBreak = block;
     this.breakBlockProgressivelyWithTool(world, pos, dropItems, tool);
   }
 
