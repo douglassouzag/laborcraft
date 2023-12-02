@@ -15,7 +15,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo.Map;
 
-public class SmartMineGoal extends Goal {
+public class MineGoal extends Goal {
 
   public enum MiningAction {
     MINE,
@@ -60,7 +60,7 @@ public class SmartMineGoal extends Goal {
 
   private BlockPos currentStairPos;
 
-  public SmartMineGoal(MinerNPCEntity npc) {
+  public MineGoal(MinerNPCEntity npc) {
     this.npc = npc;
   }
 

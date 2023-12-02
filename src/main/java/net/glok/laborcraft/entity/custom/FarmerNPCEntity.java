@@ -3,7 +3,7 @@ package net.glok.laborcraft.entity.custom;
 import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.goals.CollectItemsGoal;
 import net.glok.laborcraft.goals.DepositItemsInChestGoal;
-import net.glok.laborcraft.goals.FarmCropsGoal;
+import net.glok.laborcraft.goals.FarmGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Item;
@@ -27,7 +27,7 @@ public class FarmerNPCEntity extends WorkerNPCEntity {
   @Override
   protected void initGoals() {
     super.initGoals();
-    this.goalSelector.add(3, new FarmCropsGoal(this));
+    this.goalSelector.add(3, new FarmGoal(this));
     this.goalSelector.add(
         3,
         new CollectItemsGoal(

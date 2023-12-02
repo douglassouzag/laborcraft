@@ -35,4 +35,8 @@ public class NavigationHelper {
 
     return (dx <= 1 && dy == 0 && dz <= 1) && (dx + dz > 0);
   }
+
+  public boolean isStopped(PathAwareEntity entity) {
+    return entity.getNavigation().isIdle();
+  }
 }

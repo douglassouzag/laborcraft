@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
-public class FarmCropsGoal extends Goal {
+public class FarmGoal extends Goal {
 
   private final NPCEntity npc;
   private final InventoryHelper inventoryHelper = new InventoryHelper();
@@ -36,7 +36,7 @@ public class FarmCropsGoal extends Goal {
 
   private Block lastCropHarvested;
 
-  public FarmCropsGoal(NPCEntity npc) {
+  public FarmGoal(NPCEntity npc) {
     this.npc = npc;
   }
 

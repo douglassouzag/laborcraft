@@ -8,8 +8,8 @@ import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.goals.CollectItemsGoal;
 import net.glok.laborcraft.goals.DepositItemsInChestGoal;
 import net.glok.laborcraft.goals.ManageToolsGoal;
-import net.glok.laborcraft.goals.SmartMineGoal;
-import net.glok.laborcraft.goals.SmartMineGoal.MiningAction;
+import net.glok.laborcraft.goals.MineGoal;
+import net.glok.laborcraft.goals.MineGoal.MiningAction;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Item;
@@ -90,7 +90,7 @@ public class MinerNPCEntity extends WorkerNPCEntity {
           }
         )
       );
-    this.goalSelector.add(3, new SmartMineGoal(this));
+    this.goalSelector.add(3, new MineGoal(this));
 
     this.goalSelector.add(
         8,

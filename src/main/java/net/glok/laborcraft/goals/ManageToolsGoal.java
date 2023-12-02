@@ -1,5 +1,6 @@
 package net.glok.laborcraft.goals;
 
+import net.glok.laborcraft.entity.custom.MinerNPCEntity;
 import net.glok.laborcraft.entity.custom.NPCEntity;
 import net.glok.laborcraft.state.StateMachineGoal.StateEnum;
 import net.minecraft.block.Block;
@@ -64,6 +65,34 @@ public class ManageToolsGoal extends Goal {
     return bestTool;
   }
 
+  private ItemStack getBestWorkToolBasedOnToolType(
+    DefaultedList<ItemStack> inventory,
+    Item[] tools
+  ) {
+    ItemStack bestTool = ItemStack.EMPTY;
+    float bestScore = -1.0F;
+    int durabilityThreshold = 10;
+
+    for (Item tool : tools) {
+      for (ItemStack stack : inventory) {
+        if (stack.getItem().equals(tool)) {
+          float efficiency = tool.getMiningSpeedMultiplier(
+            stack,
+            Block.getBlockFromItem(tool).getDefaultState()
+          );
+          int durability = stack.getMaxDamage() - stack.getDamage();
+          float score = efficiency;
+          if (score > bestScore && durability > durabilityThreshold) {
+            bestTool = stack;
+            bestScore = score;
+            break;
+          }
+        }
+      }
+    }
+    return bestTool;
+  }
+
   @Override
   public boolean canStart() {
     return (this.canUseTools.length > 0);
@@ -74,12 +103,19 @@ public class ManageToolsGoal extends Goal {
     Block blockToBreak = this.npc.blockToBreak;
     if (blockToBreak == null) return;
 
-    ItemStack bestTool =
-      this.getBestWorkToolBasedOnBlock(
-          this.npc.getItems(),
-          this.canUseTools,
-          blockToBreak
-        );
+    ItemStack bestTool;
+
+    if (this.npc instanceof MinerNPCEntity) {
+      bestTool =
+        this.getBestWorkToolBasedOnBlock(
+            this.npc.getItems(),
+            this.canUseTools,
+            blockToBreak
+          );
+    } else {
+      bestTool =
+        getBestWorkToolBasedOnToolType(this.npc.getItems(), this.canUseTools);
+    }
 
     if (bestTool != ItemStack.EMPTY) {
       this.npc.haveWorkTool = true;
