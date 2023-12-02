@@ -48,16 +48,19 @@ public class ManageToolsGoal extends Goal {
             block.getDefaultState()
           );
           int durability = stack.getMaxDamage() - stack.getDamage();
-          float score = efficiency * durability;
-
-          if (score > bestScore && durability > durabilityThreshold) {
+          float score = efficiency;
+          if (
+            score > bestScore &&
+            durability > durabilityThreshold &&
+            efficiency > 1.0F
+          ) {
             bestTool = stack;
             bestScore = score;
+            break;
           }
         }
       }
     }
-
     return bestTool;
   }
 
@@ -83,6 +86,8 @@ public class ManageToolsGoal extends Goal {
 
       this.npc.equipStack(EquipmentSlot.MAINHAND, bestTool);
     } else {
+      this.npc.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+
       if (needToHaveTool) {
         this.npc.haveWorkTool = false;
         this.npc.currentState = StateEnum.IDLE;

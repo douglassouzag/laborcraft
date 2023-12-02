@@ -68,11 +68,13 @@ public class BlockHelper {
       (1 - ((float) tool.getDamage() / tool.getMaxDamage()));
 
     int breakingProgress = (int) (
-      this.lastBreakProgress + Math.round((0.5 * miningSpeed))
+      this.lastBreakProgress + Math.ceil((0.5 * miningSpeed))
     );
+
     if (breakingProgress >= 10) breakingProgress = 10;
 
     world.setBlockBreakingInfo(0, pos, breakingProgress);
+
     if (lastBreakProgress >= 10) {
       this.lastBreakProgress = 0;
       this.breakBlock(world, pos, dropItems);
