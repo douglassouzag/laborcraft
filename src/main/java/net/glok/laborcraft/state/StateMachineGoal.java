@@ -57,12 +57,7 @@ public class StateMachineGoal extends Goal {
       );
     this.transitions.put(
         StateEnum.DEPOSITING,
-        EnumSet.of(
-          StateEnum.WORKING,
-          StateEnum.FOLLOWING,
-          StateEnum.SLEEPING,
-          StateEnum.IDLE
-        )
+        EnumSet.of(StateEnum.FOLLOWING, StateEnum.SLEEPING, StateEnum.IDLE)
       );
 
     this.transitions.put(

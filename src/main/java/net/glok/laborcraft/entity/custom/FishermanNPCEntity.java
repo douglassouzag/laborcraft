@@ -1,14 +1,15 @@
 package net.glok.laborcraft.entity.custom;
 
 import net.glok.laborcraft.Laborcraft;
+import net.glok.laborcraft.goals.FishGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-public abstract class ButcherNPCEntity extends WorkerNPCEntity {
+public class FishermanNPCEntity extends WorkerNPCEntity {
 
-  public ButcherNPCEntity(
+  public FishermanNPCEntity(
     EntityType<? extends PathAwareEntity> entityType,
     World world
   ) {
@@ -17,8 +18,14 @@ public abstract class ButcherNPCEntity extends WorkerNPCEntity {
       world,
       new Identifier(
         Laborcraft.MOD_ID,
-        "textures/entity/profession/butcher.png"
+        "textures/entity/profession/fisherman.png"
       )
     );
+  }
+
+  @Override
+  protected void initGoals() {
+    super.initGoals();
+    this.goalSelector.add(3, new FishGoal(this));
   }
 }

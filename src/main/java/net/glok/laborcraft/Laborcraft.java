@@ -54,5 +54,9 @@ public class Laborcraft implements ModInitializer {
       ModEntities.BANDIT_NPC_ENTITY,
       NPCEntity.createDefaultAttributes()
     );
+    FabricDefaultAttributeRegistry.register(
+      ModEntities.FISHERMAN_NPC_ENTITY,
+      NPCEntity.createDefaultAttributes()
+    );
   }
 }

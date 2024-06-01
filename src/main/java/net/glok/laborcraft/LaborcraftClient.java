@@ -49,6 +49,11 @@ public class LaborcraftClient implements ClientModInitializer {
       NPCRenderer::new
     );
 
+    EntityRendererRegistry.register(
+      ModEntities.FISHERMAN_NPC_ENTITY,
+      NPCRenderer::new
+    );
+
     HandledScreens.register(Laborcraft.BOX_SCREEN_HANDLER, BoxScreen::new);
   }
 }

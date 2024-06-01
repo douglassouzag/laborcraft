@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.glok.laborcraft.Laborcraft;
 import net.glok.laborcraft.entity.custom.BanditNPCEntity;
 import net.glok.laborcraft.entity.custom.FarmerNPCEntity;
+import net.glok.laborcraft.entity.custom.FishermanNPCEntity;
 import net.glok.laborcraft.entity.custom.GuardNPCEntity;
 import net.glok.laborcraft.entity.custom.LumberjackNPCEntity;
 import net.glok.laborcraft.entity.custom.MercenaryNPCEntity;
@@ -72,6 +73,14 @@ public class ModEntities {
     new Identifier(Laborcraft.MOD_ID, "bandit_npc"),
     FabricEntityTypeBuilder
       .create(npcSpawnGroup, BanditNPCEntity::new)
+      .dimensions(npcDimensions)
+      .build()
+  );
+  public static final EntityType<FishermanNPCEntity> FISHERMAN_NPC_ENTITY = Registry.register(
+    Registries.ENTITY_TYPE,
+    new Identifier(Laborcraft.MOD_ID, "fisherman_npc"),
+    FabricEntityTypeBuilder
+      .create(npcSpawnGroup, FishermanNPCEntity::new)
       .dimensions(npcDimensions)
       .build()
   );
