@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "laborcraft",
 	"version": "${version}",
-	"name": "laborcraft",
+	"name": "Laborcraft",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
 		"Me!"
@@ -16,20 +16,24 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.glok.laborcraft.Laborcraft"
+			"net.glok.Laborcraft"
 		],
 		"client": [
-			"net.glok.laborcraft.LaborcraftClient"
+			"net.glok.LaborcraftClient"
 		],
 		"fabric-datagen": [
-			"net.glok.laborcraft.LaborcraftDataGenerator"
+			"net.glok.LaborcraftDataGenerator"
 		]
 	},
 	"mixins": [
-		"laborcraft.mixins.json"
+		"laborcraft.mixins.json",
+		{
+			"config": "laborcraft.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
-		"fabricloader": ">=0.14.24",
+		"fabricloader": ">=0.15.11",
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
